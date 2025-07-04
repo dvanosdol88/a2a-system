@@ -1,0 +1,33 @@
+{
+  "timestamp": "2025-07-04T18:58:33.556826+00:00",
+  "api_server": {
+    "status": "\u2705 RUNNING",
+    "response_time": "5ms",
+    "server_time": "2025-07-04T18:58:33Z",
+    "details": {
+      "server_time": "2025-07-04T18:58:33Z",
+      "status": "ok"
+    }
+  },
+  "task_queue": {
+    "status": "\u2705 ACCESSIBLE",
+    "task_count": 2,
+    "recent_tasks": [
+      {
+        "created": "2025-07-04T17:25:38Z",
+        "task": "Test task from Claude"
+      },
+      {
+        "created": "2025-07-04T17:29:21Z",
+        "task": "[test] Hello from Claude!"
+      }
+    ]
+  },
+  "monitoring_dashboard": {
+    "status": "\u274c NOT RUNNING",
+    "error": "Connection refused"
+  },
+  "diagnosis": [
+    "Monitoring dashboard not running - Jules should start monitoring/dashboard_server.py"
+  ]
+}
