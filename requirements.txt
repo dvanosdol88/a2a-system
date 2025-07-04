@@ -44,3 +44,10 @@ subprocess  # For test orchestration (built-in)
 
 # Note: Most enhanced testing dependencies are built-in Python modules
 # The enhanced testing framework uses only standard library modules beyond the core dependencies
+
+# Monitoring Dashboard Dependencies
+psutil>=5.9.0  # System resource monitoring
+# Flask already included above for monitoring dashboard server
+
+# Additional monitoring capabilities (all built-in):
+# time, threading, statistics, pathlib, json, subprocess
