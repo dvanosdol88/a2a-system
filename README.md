@@ -34,11 +34,10 @@ A sophisticated multi-agent system enabling seamless communication and coordinat
 git clone https://github.com/dvanosdol88/a2a-system.git
 cd a2a-system
 
-# Setup environment and start Jules server
+# Setup environment and start Jules server (single command)
 python3 jules_pypi_setup.py
-python3 jules_ultimate_fix.py
 
-# Test communication
+# Test communication (in separate terminal)
 python3 test_hello_world.py
 ```
 
@@ -69,10 +68,9 @@ a2a-system/
 
 ### For Jules
 ```bash
-# Quick setup
+# Single command setup and server start
 python3 jules_pypi_setup.py
-python3 jules_ultimate_fix.py
-# Server starts on http://127.0.0.1:5006
+# Server starts automatically on http://127.0.0.1:5006
 ```
 
 ### For CODEX
