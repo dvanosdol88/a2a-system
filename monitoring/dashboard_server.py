@@ -13,13 +13,14 @@ import requests
 from typing import Dict, List, Any, Optional
 import statistics
 
-from shared.message_types import A2AMessage, MessageType
+# from shared.message_types import A2AMessage, MessageType
+# Simplified version for now - commenting out complex imports
 
 
 class A2AMonitor:
     """Real-time A2A system monitoring"""
     
-    def __init__(self, api_base_url: str = "http://127.0.0.1:5000"):
+    def __init__(self, api_base_url: str = "http://127.0.0.1:5006"):
         self.api_base_url = api_base_url
         self.metrics_history = []
         self.alerts = []
@@ -282,7 +283,190 @@ monitor = A2AMonitor()
 @app.route('/')
 def dashboard():
     """Main dashboard page"""
-    return render_template('dashboard.html')
+    return '''<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A2A System Dashboard - Mission Control</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #1a1a1a; color: #fff; }
+        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .card { background: #2a2a2a; border-radius: 8px; padding: 20px; border-left: 4px solid #4CAF50; }
+        .card.warning { border-left-color: #FF9800; }
+        .card.error { border-left-color: #f44336; }
+        .metric { font-size: 2em; font-weight: bold; color: #4CAF50; }
+        .label { color: #bbb; font-size: 0.9em; }
+        .status-healthy { color: #4CAF50; }
+        .status-error { color: #f44336; }
+        .alert { padding: 10px; margin: 5px 0; border-radius: 4px; background: #333; }
+        .alert.warning { background: #FF9800; color: #000; }
+        .alert.critical { background: #f44336; }
+        h1 { text-align: center; margin-bottom: 30px; }
+        h2 { border-bottom: 2px solid #4CAF50; padding-bottom: 10px; }
+        .refresh-btn { background: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        .refresh-btn:hover { background: #45a049; }
+        .task-list { max-height: 200px; overflow-y: auto; }
+        .task-item { background: #333; margin: 5px 0; padding: 12px; border-radius: 4px; border-left: 3px solid #4CAF50; }
+        .message-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .message-time { color: #bbb; font-size: 0.9em; font-weight: bold; }
+        .message-route { display: flex; align-items: center; gap: 8px; }
+        .agent-badge { font-size: 0.8em; font-weight: bold; }
+        .arrow { color: #888; font-size: 0.9em; }
+        .message-content { color: #fff; line-height: 1.4; }
+    </style>
+</head>
+<body>
+    <h1>🎮 A2A System Dashboard - Mission Control</h1>
+    
+    <div style="text-align: center; margin-bottom: 20px;">
+        <button class="refresh-btn" onclick="refreshDashboard()">🔄 Refresh Dashboard</button>
+        <button class="refresh-btn" onclick="startMonitoring()">▶️ Start Monitoring</button>
+        <button class="refresh-btn" onclick="stopMonitoring()">⏹️ Stop Monitoring</button>
+    </div>
+    
+    <div class="dashboard">
+        <div class="card">
+            <h2>System Status</h2>
+            <div class="metric" id="system-status">Loading...</div>
+            <div class="label">Current Status</div>
+            <div id="uptime">Uptime: Loading...</div>
+            <div id="last-check">Last Check: Loading...</div>
+        </div>
+        
+        <div class="card">
+            <h2>Performance Metrics</h2>
+            <div class="metric" id="avg-response-time">Loading...</div>
+            <div class="label">Average Response Time (ms)</div>
+            <div id="response-range">Range: Loading...</div>
+        </div>
+        
+        <div class="card">
+            <h2>Task Queue</h2>
+            <div class="metric" id="task-count">Loading...</div>
+            <div class="label">Current Tasks</div>
+            <div id="task-details">Loading...</div>
+        </div>
+        
+        <div class="card">
+            <h2>Alert Status</h2>
+            <div class="metric" id="alert-count">Loading...</div>
+            <div class="label">Active Alerts</div>
+            <div id="recent-alerts">Loading...</div>
+        </div>
+    </div>
+    
+    <div class="card" style="margin-top: 20px;">
+        <h2>Recent A2A Messages</h2>
+        <div id="recent-messages" class="task-list">Loading...</div>
+    </div>
+
+    <script>
+        function refreshDashboard() {
+            fetch('/api/dashboard-data')
+                .then(response => response.json())
+                .then(data => updateDashboard(data))
+                .catch(error => console.error('Dashboard refresh error:', error));
+                
+            // Also fetch recent messages via dashboard proxy
+            fetch('/api/messages')
+                .then(response => response.json())
+                .then(tasks => updateMessages(tasks))
+                .catch(error => console.error('Messages fetch error:', error));
+        }
+        
+        function updateDashboard(data) {
+            // Update system status
+            const status = data.system_status.status;
+            document.getElementById('system-status').textContent = status.toUpperCase();
+            document.getElementById('system-status').className = 'metric status-' + status;
+            document.getElementById('uptime').textContent = 'Uptime: ' + data.system_status.uptime_formatted;
+            document.getElementById('last-check').textContent = 'Last Check: ' + new Date(data.system_status.last_check).toLocaleTimeString();
+            
+            // Update performance metrics
+            document.getElementById('avg-response-time').textContent = Math.round(data.performance_metrics.avg_response_time || 0) + 'ms';
+            document.getElementById('response-range').textContent = 
+                'Range: ' + Math.round(data.performance_metrics.min_response_time || 0) + 
+                'ms - ' + Math.round(data.performance_metrics.max_response_time || 0) + 'ms';
+            
+            // Update alerts
+            document.getElementById('alert-count').textContent = data.alerts.active;
+            const alertsHtml = data.alerts.recent.map(alert => 
+                '<div class="alert ' + alert.severity + '">' + alert.message + '</div>'
+            ).join('');
+            document.getElementById('recent-alerts').innerHTML = alertsHtml || 'No recent alerts';
+            
+            // Update task count from performance data
+            const recentMetrics = data.recent_metrics || [];
+            const latestMetric = recentMetrics[recentMetrics.length - 1];
+            if (latestMetric) {
+                document.getElementById('task-count').textContent = latestMetric.task_count || 0;
+            }
+        }
+        
+        function detectAgent(taskText) {
+            const text = taskText.toLowerCase();
+            if (text.includes('claude') && text.includes('hello')) return 'Claude';
+            if (text.includes('codex') && text.includes('hello')) return 'CODEX';
+            if (text.includes('codex') && text.includes('orchestration')) return 'CODEX';
+            if (text.includes('dashboard demo')) return 'Claude';
+            if (text.includes('dashboard') && text.includes('fixed')) return 'Claude';
+            if (text.includes('hello world') && text.includes('claude')) return 'Claude';
+            if (text.includes('test') && text.includes('claude')) return 'Claude';
+            if (text.includes('🤖') && text.includes('codex')) return 'CODEX';
+            if (text.includes('🎮') || text.includes('📊') || text.includes('🚀')) return 'Claude';
+            return 'Unknown';
+        }
+        
+        function updateMessages(tasks) {
+            const messagesHtml = tasks.slice(-10).reverse().map((task, index) => {
+                const date = new Date(task.created);
+                const sender = detectAgent(task.task);
+                const senderColor = sender === 'Claude' ? '#4CAF50' : 
+                                  sender === 'CODEX' ? '#FF9800' : 
+                                  sender === 'Jules' ? '#2196F3' : '#bbb';
+                
+                return '<div class="task-item">' +
+                    '<div class="message-header">' +
+                        '<span class="message-time">' + date.toLocaleTimeString() + '</span>' +
+                        '<span class="message-route">' +
+                            '<span class="agent-badge" style="color: ' + senderColor + '">From: ' + sender + '</span>' +
+                            '<span class="arrow">→</span>' +
+                            '<span class="agent-badge" style="color: #2196F3">To: Jules</span>' +
+                        '</span>' +
+                    '</div>' +
+                    '<div class="message-content">' + task.task + '</div>' +
+                    '</div>';
+            }).join('');
+            document.getElementById('recent-messages').innerHTML = messagesHtml || 'No recent messages';
+            
+            // Update task count
+            document.getElementById('task-count').textContent = tasks.length;
+            document.getElementById('task-details').textContent = 'Total messages: ' + tasks.length;
+        }
+        
+        function startMonitoring() {
+            fetch('/api/monitoring/start', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => console.log('Monitoring started:', data))
+                .catch(error => console.error('Start monitoring error:', error));
+        }
+        
+        function stopMonitoring() {
+            fetch('/api/monitoring/stop', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => console.log('Monitoring stopped:', data))
+                .catch(error => console.error('Stop monitoring error:', error));
+        }
+        
+        // Auto-refresh every 5 seconds
+        setInterval(refreshDashboard, 5000);
+        
+        // Initial load
+        refreshDashboard();
+    </script>
+</body>
+</html>'''
 
 @app.route('/api/dashboard-data')
 def dashboard_data():
@@ -293,6 +477,19 @@ def dashboard_data():
 def system_status():
     """Get system status API"""
     return jsonify(monitor.system_status)
+
+@app.route('/api/messages')
+def messages():
+    """Get messages from Jules API"""
+    try:
+        response = requests.get("http://127.0.0.1:5006/tasks", timeout=5)
+        if response.status_code == 200:
+            return jsonify(response.json())
+        else:
+            return jsonify([])
+    except Exception as e:
+        print(f"Error fetching messages: {e}")
+        return jsonify([])
 
 @app.route('/api/alerts')
 def alerts():

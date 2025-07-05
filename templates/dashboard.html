@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A2A System Dashboard - Mission Control</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #1a1a1a; color: #fff; }
+        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .card { background: #2a2a2a; border-radius: 8px; padding: 20px; border-left: 4px solid #4CAF50; }
+        .card.warning { border-left-color: #FF9800; }
+        .card.error { border-left-color: #f44336; }
+        .metric { font-size: 2em; font-weight: bold; color: #4CAF50; }
+        .label { color: #bbb; font-size: 0.9em; }
+        .status-healthy { color: #4CAF50; }
+        .status-error { color: #f44336; }
+        .alert { padding: 10px; margin: 5px 0; border-radius: 4px; background: #333; }
+        .alert.warning { background: #FF9800; color: #000; }
+        .alert.critical { background: #f44336; }
+        h1 { text-align: center; margin-bottom: 30px; }
+        h2 { border-bottom: 2px solid #4CAF50; padding-bottom: 10px; }
+        .refresh-btn { background: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        .refresh-btn:hover { background: #45a049; }
+    </style>
+</head>
+<body>
+    <h1>🎮 A2A System Dashboard - Mission Control</h1>
+    
+    <div style="text-align: center; margin-bottom: 20px;">
+        <button class="refresh-btn" onclick="refreshDashboard()">🔄 Refresh Dashboard</button>
+        <button class="refresh-btn" onclick="startMonitoring()">▶️ Start Monitoring</button>
+        <button class="refresh-btn" onclick="stopMonitoring()">⏹️ Stop Monitoring</button>
+    </div>
+    
+    <div class="dashboard">
+        <div class="card">
+            <h2>System Status</h2>
+            <div class="metric" id="system-status">Loading...</div>
+            <div class="label">Current Status</div>
+            <div id="uptime">Uptime: Loading...</div>
+            <div id="last-check">Last Check: Loading...</div>
+        </div>
+        
+        <div class="card">
+            <h2>Performance Metrics</h2>
+            <div class="metric" id="avg-response-time">Loading...</div>
+            <div class="label">Average Response Time (ms)</div>
+            <div id="response-range">Range: Loading...</div>
+        </div>
+        
+        <div class="card">
+            <h2>Task Queue</h2>
+            <div class="metric" id="task-count">Loading...</div>
+            <div class="label">Current Tasks</div>
+        </div>
+        
+        <div class="card">
+            <h2>Alert Status</h2>
+            <div class="metric" id="alert-count">Loading...</div>
+            <div class="label">Active Alerts</div>
+            <div id="recent-alerts">Loading...</div>
+        </div>
+    </div>
+    
+    <div class="card" style="margin-top: 20px;">
+        <h2>Recent System Activity</h2>
+        <div id="recent-activity">Loading...</div>
+    </div>
+
+    <script>
+        function refreshDashboard() {
+            fetch('/api/dashboard-data')
+                .then(response => response.json())
+                .then(data => updateDashboard(data))
+                .catch(error => console.error('Dashboard refresh error:', error));
+        }
+        
+        function updateDashboard(data) {
+            // Update system status
+            const status = data.system_status.status;
+            document.getElementById('system-status').textContent = status.toUpperCase();
+            document.getElementById('system-status').className = 'metric status-' + status;
+            document.getElementById('uptime').textContent = 'Uptime: ' + data.system_status.uptime_formatted;
+            document.getElementById('last-check').textContent = 'Last Check: ' + new Date(data.system_status.last_check).toLocaleTimeString();
+            
+            // Update performance metrics
+            document.getElementById('avg-response-time').textContent = Math.round(data.performance_metrics.avg_response_time) + 'ms';
+            document.getElementById('response-range').textContent = 
+                'Range: ' + Math.round(data.performance_metrics.min_response_time) + 
+                'ms - ' + Math.round(data.performance_metrics.max_response_time) + 'ms';
+            
+            // Update alerts
+            document.getElementById('alert-count').textContent = data.alerts.active;
+            const alertsHtml = data.alerts.recent.map(alert => 
+                '<div class="alert ' + alert.severity + '">' + alert.message + '</div>'
+            ).join('');
+            document.getElementById('recent-alerts').innerHTML = alertsHtml || 'No recent alerts';
+            
+            // Update recent activity
+            const activityHtml = data.recent_metrics.map(metric => 
+                '<div>' + new Date(metric.timestamp).toLocaleTimeString() + 
+                ' - Status: ' + metric.status + 
+                (metric.response_time ? ' - Response: ' + Math.round(metric.response_time) + 'ms' : '') +
+                '</div>'
+            ).join('');
+            document.getElementById('recent-activity').innerHTML = activityHtml || 'No recent activity';
+        }
+        
+        function startMonitoring() {
+            fetch('/api/monitoring/start', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => console.log('Monitoring started:', data))
+                .catch(error => console.error('Start monitoring error:', error));
+        }
+        
+        function stopMonitoring() {
+            fetch('/api/monitoring/stop', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => console.log('Monitoring stopped:', data))
+                .catch(error => console.error('Stop monitoring error:', error));
+        }
+        
+        // Auto-refresh every 5 seconds
+        setInterval(refreshDashboard, 5000);
+        
+        // Initial load
+        refreshDashboard();
+    </script>
+</body>
+</html>
