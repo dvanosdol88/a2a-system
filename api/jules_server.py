@@ -1,10 +1,13 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from pathlib import Path
 import datetime, json
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all domains
 BASE = Path(__file__).parent.parent
 TASKS_FILE = BASE / "shared" / "tasks.json"
+AGENT_TASKS_FILE = BASE / "shared" / "agent_tasks.json"
 
 def _now():
     return datetime.datetime.utcnow().isoformat(timespec="seconds") + "Z"
@@ -17,18 +20,92 @@ def health():
 def add_task():
     data = request.get_json(force=True)
     task = data.get("task", "").strip()
+    assigned_to = data.get("assigned_to", "").strip()
     if not task:
         return {"error": "task field required"}, 400
 
+    # Add to general tasks
     tasks = json.loads(TASKS_FILE.read_text()) if TASKS_FILE.exists() else []
-    tasks.append({"task": task, "created": _now()})
+    task_entry = {"task": task, "created": _now()}
+    if assigned_to:
+        task_entry["assigned_to"] = assigned_to
+    tasks.append(task_entry)
     TASKS_FILE.write_text(json.dumps(tasks, indent=2))
-    return {"message": f"queued {task!r}", "total_tasks": len(tasks)}, 201
+    
+    # Add to agent-specific tasks if assigned
+    if assigned_to:
+        agent_tasks = json.loads(AGENT_TASKS_FILE.read_text()) if AGENT_TASKS_FILE.exists() else {}
+        if assigned_to not in agent_tasks:
+            agent_tasks[assigned_to] = []
+        agent_tasks[assigned_to].append({
+            "id": len(tasks),
+            "task": task,
+            "created": _now(),
+            "status": "pending"
+        })
+        AGENT_TASKS_FILE.write_text(json.dumps(agent_tasks, indent=2))
+    
+    return {"message": f"queued {task!r}", "total_tasks": len(tasks), "assigned_to": assigned_to}, 201
 
 @app.route("/tasks")
 def list_tasks():
     tasks = json.loads(TASKS_FILE.read_text()) if TASKS_FILE.exists() else []
     return jsonify(tasks)
+
+@app.route("/agent/<agent_id>/tasks")
+def get_agent_tasks(agent_id):
+    """Get pending tasks for a specific agent"""
+    agent_tasks = json.loads(AGENT_TASKS_FILE.read_text()) if AGENT_TASKS_FILE.exists() else {}
+    agent_queue = agent_tasks.get(agent_id, [])
+    pending_tasks = [task for task in agent_queue if task["status"] == "pending"]
+    return jsonify(pending_tasks)
+
+@app.route("/agent/<agent_id>/tasks/<int:task_id>/complete", methods=["POST"])
+def complete_agent_task(agent_id, task_id):
+    """Mark an agent task as completed"""
+    data = request.get_json(force=True) if request.is_json else {}
+    response = data.get("response", "Task completed")
+    
+    agent_tasks = json.loads(AGENT_TASKS_FILE.read_text()) if AGENT_TASKS_FILE.exists() else {}
+    if agent_id not in agent_tasks:
+        return {"error": "Agent not found"}, 404
+    
+    # Find and update the task
+    for task in agent_tasks[agent_id]:
+        if task["id"] == task_id:
+            task["status"] = "completed"
+            task["completed"] = _now()
+            task["response"] = response
+            break
+    else:
+        return {"error": "Task not found"}, 404
+    
+    AGENT_TASKS_FILE.write_text(json.dumps(agent_tasks, indent=2))
+    
+    # Also add the response as a new general task
+    tasks = json.loads(TASKS_FILE.read_text()) if TASKS_FILE.exists() else []
+    tasks.append({"task": f"[{agent_id}] {response}", "created": _now()})
+    TASKS_FILE.write_text(json.dumps(tasks, indent=2))
+    
+    return {"message": "Task completed", "response": response}, 200
+
+@app.route("/agent/<agent_id>/tasks/<int:task_id>/acknowledge", methods=["POST"])
+def acknowledge_agent_task(agent_id, task_id):
+    """Agent acknowledges receiving a task"""
+    agent_tasks = json.loads(AGENT_TASKS_FILE.read_text()) if AGENT_TASKS_FILE.exists() else {}
+    if agent_id not in agent_tasks:
+        return {"error": "Agent not found"}, 404
+    
+    for task in agent_tasks[agent_id]:
+        if task["id"] == task_id:
+            task["status"] = "acknowledged"
+            task["acknowledged"] = _now()
+            break
+    else:
+        return {"error": "Task not found"}, 404
+    
+    AGENT_TASKS_FILE.write_text(json.dumps(agent_tasks, indent=2))
+    return {"message": "Task acknowledged"}, 200
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)

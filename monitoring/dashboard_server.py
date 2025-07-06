@@ -20,7 +20,7 @@ import statistics
 class A2AMonitor:
     """Real-time A2A system monitoring"""
     
-    def __init__(self, api_base_url: str = "http://127.0.0.1:5006"):
+    def __init__(self, api_base_url: str = "http://127.0.0.1:5000"):
         self.api_base_url = api_base_url
         self.metrics_history = []
         self.alerts = []
@@ -406,15 +406,34 @@ def dashboard():
         
         function detectAgent(taskText) {
             const text = taskText.toLowerCase();
-            if (text.includes('claude') && text.includes('hello')) return 'Claude';
-            if (text.includes('codex') && text.includes('hello')) return 'CODEX';
-            if (text.includes('codex') && text.includes('orchestration')) return 'CODEX';
+            
+            // CODEX patterns (check first since it's more specific)
+            if (text.includes('codex')) return 'CODEX';
+            if (text.includes('🤖') && (text.includes('hello') || text.includes('ready'))) return 'CODEX';
+            if (text.includes('orchestration')) return 'CODEX';
+            
+            // Claude patterns (many indicators)
+            if (text.includes('claude')) return 'Claude';
+            if (text.includes('hello world')) return 'Claude';
             if (text.includes('dashboard demo')) return 'Claude';
             if (text.includes('dashboard') && text.includes('fixed')) return 'Claude';
-            if (text.includes('hello world') && text.includes('claude')) return 'Claude';
-            if (text.includes('test') && text.includes('claude')) return 'Claude';
-            if (text.includes('🤖') && text.includes('codex')) return 'CODEX';
+            if (text.includes('from/to columns')) return 'Claude';
+            if (text.includes('step 1') || text.includes('step 2')) return 'Claude';
+            if (text.includes('security project')) return 'Claude';
+            if (text.includes('commit current changes')) return 'Claude';
+            if (text.includes('repository converted')) return 'Claude';
+            if (text.includes('complete:') || text.includes('complete!')) return 'Claude';
+            
+            // Emoji patterns that typically indicate Claude
             if (text.includes('🎮') || text.includes('📊') || text.includes('🚀')) return 'Claude';
+            if (text.includes('🔧') || text.includes('✨') || text.includes('🎯')) return 'Claude';
+            if (text.includes('🔒') || text.includes('✅') || text.includes('🎉')) return 'Claude';
+            if (text.includes('💾') || text.includes('📈') || text.includes('🛡️')) return 'Claude';
+            
+            // Test message patterns
+            if (text.includes('test') && (text.includes('claude') || text.includes('a2a'))) return 'Claude';
+            if (text.includes('testing') && text.includes('communication')) return 'Claude';
+            
             return 'Unknown';
         }
         

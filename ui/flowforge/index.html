@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlowForge - AI Agent Collaboration Platform</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Hero Section -->
+    <section class="ff-hero-section">
+        <div class="ff-container">
+            <h1 class="ff-hero-title ff-fade-in">Create Anything with AI Agents</h1>
+            <p class="ff-hero-subtitle ff-fade-in">
+                FlowForge enables non-programmers to build apps, documents, graphics, and dashboards through intelligent AI collaboration. No coding required.
+            </p>
+            <div class="ff-fade-in">
+                <a href="#task-submission" class="ff-button-primary" style="margin-right: 16px;">Start Creating</a>
+                <a href="#features" class="ff-button-secondary">Learn More</a>
+            </div>
+        </div>
+    </section>
+
+    <div class="ff-container">
+        <!-- Live System Status -->
+        <section class="ff-task-section ff-fade-in">
+            <h2 class="ff-section-title">System Status</h2>
+            <p class="ff-section-description">Real-time status of FlowForge AI agents and processing capabilities</p>
+            
+            <div class="ff-feature-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));">
+                <div class="ff-card">
+                    <div class="ff-card-header">
+                        <h3 class="ff-card-title">Agent Status</h3>
+                        <span class="ff-status-badge ff-status-healthy" id="agent-status">
+                            ● Healthy
+                        </span>
+                    </div>
+                    <p class="ff-card-description" id="agent-description">
+                        All AI agents are online and ready to process tasks
+                    </p>
+                </div>
+                
+                <div class="ff-card">
+                    <div class="ff-card-header">
+                        <h3 class="ff-card-title">Active Tasks</h3>
+                        <span class="ff-status-badge ff-status-processing" id="task-status">
+                            ● <span id="task-count">0</span> Processing
+                        </span>
+                    </div>
+                    <p class="ff-card-description">
+                        Tasks currently being handled by the AI agent network
+                    </p>
+                </div>
+                
+                <div class="ff-card">
+                    <div class="ff-card-header">
+                        <h3 class="ff-card-title">GitHub Integration</h3>
+                        <span class="ff-status-badge ff-status-healthy" id="github-status">
+                            ● Connected
+                        </span>
+                    </div>
+                    <p class="ff-card-description">
+                        Repository operations and automated workflows available
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Task Submission Interface -->
+        <section class="ff-task-section ff-fade-in" id="task-submission">
+            <h2 class="ff-section-title">Submit Your Task</h2>
+            <p class="ff-section-description">
+                Describe what you want to create in plain English. Our AI agents will collaborate to make it happen.
+            </p>
+            
+            <form id="task-form" style="max-width: 600px; margin: 0 auto;">
+                <div class="ff-form-group">
+                    <label for="task-title" class="ff-label">Project Title</label>
+                    <input 
+                        type="text" 
+                        id="task-title" 
+                        class="ff-input" 
+                        placeholder="e.g., Customer Dashboard, Marketing Landing Page, Data Analysis Report"
+                        required
+                    >
+                </div>
+                
+                <div class="ff-form-group">
+                    <label for="task-description" class="ff-label">Project Description</label>
+                    <textarea 
+                        id="task-description" 
+                        class="ff-textarea" 
+                        placeholder="Describe your project in detail. What should it do? Who is it for? What features do you need? The more specific you are, the better our AI agents can help."
+                        required
+                    ></textarea>
+                </div>
+                
+                <div class="ff-form-group">
+                    <label for="task-priority" class="ff-label">Priority Level</label>
+                    <select id="task-priority" class="ff-input">
+                        <option value="medium">Standard (3-5 business days)</option>
+                        <option value="high">High Priority (1-2 business days)</option>
+                        <option value="low">Low Priority (1-2 weeks)</option>
+                    </select>
+                </div>
+                
+                <div class="ff-form-group">
+                    <label for="contact-info" class="ff-label">Contact Information (Optional)</label>
+                    <input 
+                        type="email" 
+                        id="contact-info" 
+                        class="ff-input" 
+                        placeholder="your@email.com - for project updates and delivery"
+                    >
+                </div>
+                
+                <button type="submit" class="ff-button-primary" style="width: 100%; padding: 16px; font-size: 1.1em;">
+                    Submit to AI Agents
+                </button>
+            </form>
+        </section>
+
+        <!-- Feature Showcase -->
+        <section class="ff-fade-in" id="features">
+            <h2 class="ff-section-title">What FlowForge Can Create</h2>
+            <p class="ff-section-description">
+                Our AI agents specialize in different areas and work together to deliver professional results
+            </p>
+            
+            <div class="ff-feature-grid">
+                <div class="ff-feature-card">
+                    <div class="ff-feature-icon">📱</div>
+                    <h3 class="ff-feature-title">Web Applications</h3>
+                    <p class="ff-feature-description">
+                        Interactive dashboards, customer portals, and business tools with modern interfaces and powerful functionality.
+                    </p>
+                </div>
+                
+                <div class="ff-feature-card">
+                    <div class="ff-feature-icon">📊</div>
+                    <h3 class="ff-feature-title">Data Analysis</h3>
+                    <p class="ff-feature-description">
+                        Automated reports, visualizations, and insights from your data with professional charts and recommendations.
+                    </p>
+                </div>
+                
+                <div class="ff-feature-card">
+                    <div class="ff-feature-icon">📄</div>
+                    <h3 class="ff-feature-title">Documents & Content</h3>
+                    <p class="ff-feature-description">
+                        Professional documentation, presentations, marketing materials, and branded content that stands out.
+                    </p>
+                </div>
+                
+                <div class="ff-feature-card">
+                    <div class="ff-feature-icon">🎨</div>
+                    <h3 class="ff-feature-title">Design & Graphics</h3>
+                    <p class="ff-feature-description">
+                        Logos, infographics, social media assets, and visual branding materials with consistent professional styling.
+                    </p>
+                </div>
+                
+                <div class="ff-feature-card">
+                    <div class="ff-feature-icon">⚡</div>
+                    <h3 class="ff-feature-title">Automation</h3>
+                    <p class="ff-feature-description">
+                        Workflow automation, data processing pipelines, and system integrations that save time and reduce errors.
+                    </p>
+                </div>
+                
+                <div class="ff-feature-card">
+                    <div class="ff-feature-icon">🔗</div>
+                    <h3 class="ff-feature-title">API Integration</h3>
+                    <p class="ff-feature-description">
+                        Connect your existing tools and services with custom integrations and automated data synchronization.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Recent Activity Feed -->
+        <section class="ff-task-section ff-fade-in">
+            <h2 class="ff-section-title">Recent Activity</h2>
+            <p class="ff-section-description">
+                Live feed of tasks being processed by the FlowForge AI agent network
+            </p>
+            
+            <div id="activity-feed" style="max-height: 400px; overflow-y: auto;">
+                <div class="ff-card ff-mb-2">
+                    <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 8px;">
+                        <span class="ff-status-badge ff-status-processing">In Progress</span>
+                        <span style="font-size: var(--ff-text-xs); color: var(--ff-charcoal-500);">2 minutes ago</span>
+                    </div>
+                    <p><strong>CODEX Agent:</strong> Testing GitHub API integration and repository access...</p>
+                </div>
+                
+                <div class="ff-card ff-mb-2">
+                    <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 8px;">
+                        <span class="ff-status-badge ff-status-healthy">Completed</span>
+                        <span style="font-size: var(--ff-text-xs); color: var(--ff-charcoal-500);">5 minutes ago</span>
+                    </div>
+                    <p><strong>Jules Agent:</strong> Enhanced server infrastructure for better task coordination</p>
+                </div>
+                
+                <div class="ff-card ff-mb-2">
+                    <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 8px;">
+                        <span class="ff-status-badge ff-status-healthy">Completed</span>
+                        <span style="font-size: var(--ff-text-xs); color: var(--ff-charcoal-500);">8 minutes ago</span>
+                    </div>
+                    <p><strong>Claude Agent:</strong> Coordinated multi-agent deployment of GitHub integration features</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // API Configuration
+        const API_BASE = 'http://127.0.0.1:5000';
+        
+        // Form Submission
+        document.getElementById('task-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                title: document.getElementById('task-title').value,
+                description: document.getElementById('task-description').value,
+                priority: document.getElementById('task-priority').value,
+                contact: document.getElementById('contact-info').value
+            };
+            
+            const taskText = `FlowForge Project: ${formData.title}\n\nDescription: ${formData.description}\n\nPriority: ${formData.priority}${formData.contact ? `\nContact: ${formData.contact}` : ''}`;
+            
+            try {
+                const response = await fetch(`${API_BASE}/add_task`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        task: taskText,
+                        priority: formData.priority
+                    })
+                });
+                
+                if (response.ok) {
+                    // Success feedback
+                    const submitBtn = document.querySelector('button[type="submit"]');
+                    const originalText = submitBtn.textContent;
+                    submitBtn.textContent = '✅ Task Submitted Successfully!';
+                    submitBtn.style.background = 'var(--ff-mint-500)';
+                    
+                    // Reset form
+                    document.getElementById('task-form').reset();
+                    
+                    // Reset button after 3 seconds
+                    setTimeout(() => {
+                        submitBtn.textContent = originalText;
+                        submitBtn.style.background = 'var(--ff-teal-700)';
+                    }, 3000);
+                    
+                    // Update task count
+                    updateSystemStatus();
+                } else {
+                    throw new Error('Failed to submit task');
+                }
+            } catch (error) {
+                console.error('Error submitting task:', error);
+                alert('Failed to submit task. Please try again.');
+            }
+        });
+        
+        // System Status Updates
+        async function updateSystemStatus() {
+            try {
+                // Check agent health
+                const healthResponse = await fetch(`${API_BASE}/health`);
+                const healthData = await healthResponse.json();
+                
+                // Check active tasks
+                const tasksResponse = await fetch(`${API_BASE}/tasks`);
+                const tasks = await tasksResponse.json();
+                
+                // Update UI
+                document.getElementById('task-count').textContent = tasks.length;
+                
+                // Update agent status based on health
+                const agentStatus = document.getElementById('agent-status');
+                const agentDescription = document.getElementById('agent-description');
+                
+                if (healthResponse.ok && healthData.status === 'ok') {
+                    agentStatus.className = 'ff-status-badge ff-status-healthy';
+                    agentStatus.textContent = '● Healthy';
+                    agentDescription.textContent = 'All AI agents are online and ready to process tasks';
+                } else {
+                    agentStatus.className = 'ff-status-badge ff-status-error';
+                    agentStatus.textContent = '● Offline';
+                    agentDescription.textContent = 'Some agents may be unavailable. Please try again later.';
+                }
+                
+            } catch (error) {
+                console.error('Error updating status:', error);
+                
+                // Show offline status
+                const agentStatus = document.getElementById('agent-status');
+                agentStatus.className = 'ff-status-badge ff-status-error';
+                agentStatus.textContent = '● Offline';
+                
+                document.getElementById('agent-description').textContent = 'Unable to connect to agent network. Please check your connection.';
+            }
+        }
+        
+        // Live Activity Feed Updates
+        async function updateActivityFeed() {
+            try {
+                const response = await fetch(`${API_BASE}/tasks`);
+                const tasks = await response.json();
+                
+                const feed = document.getElementById('activity-feed');
+                
+                // Show recent tasks (last 5)
+                const recentTasks = tasks.slice(-5).reverse();
+                
+                let feedHTML = '';
+                recentTasks.forEach(task => {
+                    const timeAgo = getTimeAgo(task.timestamp);
+                    const agent = detectAgent(task.task);
+                    const status = task.status || 'processing';
+                    
+                    const statusClass = status === 'completed' ? 'ff-status-healthy' : 'ff-status-processing';
+                    const statusText = status === 'completed' ? 'Completed' : 'In Progress';
+                    
+                    feedHTML += `
+                        <div class="ff-card ff-mb-2">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <span class="ff-status-badge ${statusClass}">${statusText}</span>
+                                <span style="font-size: var(--ff-text-xs); color: var(--ff-charcoal-500);">${timeAgo}</span>
+                            </div>
+                            <p><strong>${agent} Agent:</strong> ${task.task.substring(0, 80)}...</p>
+                        </div>
+                    `;
+                });
+                
+                if (feedHTML) {
+                    feed.innerHTML = feedHTML;
+                } else {
+                    feed.innerHTML = '<div class="ff-card"><p class="ff-text-center ff-charcoal-500">No recent activity</p></div>';
+                }
+                
+            } catch (error) {
+                console.error('Error updating activity feed:', error);
+            }
+        }
+        
+        // Helper Functions
+        function detectAgent(taskText) {
+            const text = taskText.toLowerCase();
+            if (text.includes('codex') || text.includes('github') || text.includes('git')) return 'CODEX';
+            if (text.includes('jules') || text.includes('server') || text.includes('api')) return 'Jules';
+            return 'Claude';
+        }
+        
+        function getTimeAgo(timestamp) {
+            if (!timestamp) return 'just now';
+            
+            const now = new Date();
+            const time = new Date(timestamp);
+            const diffMs = now - time;
+            const diffMins = Math.floor(diffMs / 60000);
+            
+            if (diffMins < 1) return 'just now';
+            if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+            
+            const diffHours = Math.floor(diffMins / 60);
+            if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+            
+            const diffDays = Math.floor(diffHours / 24);
+            return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initial status update
+            updateSystemStatus();
+            updateActivityFeed();
+            
+            // Update every 30 seconds
+            setInterval(updateSystemStatus, 30000);
+            setInterval(updateActivityFeed, 15000);
+            
+            // Smooth scrolling for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

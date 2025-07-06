@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Rubix Cube 3D</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        
+        .cube-container {
+            perspective: 1000px;
+            transform-style: preserve-3d;
+        }
+        
+        .cube {
+            width: 300px;
+            height: 300px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.3s ease;
+            cursor: grab;
+        }
+        
+        .cube:active {
+            cursor: grabbing;
+        }
+        
+        .face {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 2px;
+            border: 3px solid #333;
+        }
+        
+        .square {
+            border: 1px solid #222;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        
+        /* Face positioning */
+        .front { transform: rotateY(0deg) translateZ(150px); }
+        .back { transform: rotateY(180deg) translateZ(150px); }
+        .right { transform: rotateY(90deg) translateZ(150px); }
+        .left { transform: rotateY(-90deg) translateZ(150px); }
+        .top { transform: rotateX(90deg) translateZ(150px); }
+        .bottom { transform: rotateX(-90deg) translateZ(150px); }
+        
+        /* Face colors */
+        .front .square { background: #ff0000; } /* Red */
+        .back .square { background: #ff8c00; } /* Orange */
+        .right .square { background: #0000ff; } /* Blue */
+        .left .square { background: #00ff00; } /* Green */
+        .top .square { background: #ffffff; color: #000; } /* White */
+        .bottom .square { background: #ffff00; color: #000; } /* Yellow */
+        
+        .controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            z-index: 100;
+        }
+        
+        .controls h2 {
+            margin: 0 0 10px 0;
+            color: #fff;
+        }
+        
+        .controls p {
+            margin: 5px 0;
+            color: #ccc;
+        }
+        
+        .info {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            color: #888;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <h2>🎮 Rubix Cube 3D</h2>
+        <p>🖱️ Drag to rotate</p>
+        <p>⬅️➡️ Arrow keys: Horizontal</p>
+        <p>⬆️⬇️ Arrow keys: Vertical</p>
+    </div>
+    
+    <div class="cube-container">
+        <div class="cube" id="cube">
+            <!-- Front face -->
+            <div class="face front">
+                <div class="square">R1</div><div class="square">R2</div><div class="square">R3</div>
+                <div class="square">R4</div><div class="square">R5</div><div class="square">R6</div>
+                <div class="square">R7</div><div class="square">R8</div><div class="square">R9</div>
+            </div>
+            
+            <!-- Back face -->
+            <div class="face back">
+                <div class="square">O1</div><div class="square">O2</div><div class="square">O3</div>
+                <div class="square">O4</div><div class="square">O5</div><div class="square">O6</div>
+                <div class="square">O7</div><div class="square">O8</div><div class="square">O9</div>
+            </div>
+            
+            <!-- Right face -->
+            <div class="face right">
+                <div class="square">B1</div><div class="square">B2</div><div class="square">B3</div>
+                <div class="square">B4</div><div class="square">B5</div><div class="square">B6</div>
+                <div class="square">B7</div><div class="square">B8</div><div class="square">B9</div>
+            </div>
+            
+            <!-- Left face -->
+            <div class="face left">
+                <div class="square">G1</div><div class="square">G2</div><div class="square">G3</div>
+                <div class="square">G4</div><div class="square">G5</div><div class="square">G6</div>
+                <div class="square">G7</div><div class="square">G8</div><div class="square">G9</div>
+            </div>
+            
+            <!-- Top face -->
+            <div class="face top">
+                <div class="square">W1</div><div class="square">W2</div><div class="square">W3</div>
+                <div class="square">W4</div><div class="square">W5</div><div class="square">W6</div>
+                <div class="square">W7</div><div class="square">W8</div><div class="square">W9</div>
+            </div>
+            
+            <!-- Bottom face -->
+            <div class="face bottom">
+                <div class="square">Y1</div><div class="square">Y2</div><div class="square">Y3</div>
+                <div class="square">Y4</div><div class="square">Y5</div><div class="square">Y6</div>
+                <div class="square">Y7</div><div class="square">Y8</div><div class="square">Y9</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="info">
+        Built by FlowForge CODEX Agent | 🤖 A2A System
+    </div>
+    
+    <script>
+        const cube = document.getElementById('cube');
+        let rotationX = -15;
+        let rotationY = 15;
+        let isDragging = false;
+        let previousMouseX = 0;
+        let previousMouseY = 0;
+        
+        function updateCubeRotation() {
+            cube.style.transform = `rotateX(${rotationX}deg) rotateY(${rotationY}deg)`;
+        }
+        
+        // Mouse controls
+        cube.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            previousMouseX = e.clientX;
+            previousMouseY = e.clientY;
+            e.preventDefault();
+        });
+        
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            
+            const deltaX = e.clientX - previousMouseX;
+            const deltaY = e.clientY - previousMouseY;
+            
+            rotationY += deltaX * 0.5;
+            rotationX -= deltaY * 0.5;
+            
+            // Limit vertical rotation
+            rotationX = Math.max(-90, Math.min(90, rotationX));
+            
+            updateCubeRotation();
+            
+            previousMouseX = e.clientX;
+            previousMouseY = e.clientY;
+        });
+        
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+        
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            switch(e.key) {
+                case 'ArrowLeft':
+                    rotationY -= 15;
+                    break;
+                case 'ArrowRight':
+                    rotationY += 15;
+                    break;
+                case 'ArrowUp':
+                    rotationX -= 15;
+                    rotationX = Math.max(-90, Math.min(90, rotationX));
+                    break;
+                case 'ArrowDown':
+                    rotationX += 15;
+                    rotationX = Math.max(-90, Math.min(90, rotationX));
+                    break;
+                default:
+                    return;
+            }
+            updateCubeRotation();
+            e.preventDefault();
+        });
+        
+        // Initialize position
+        updateCubeRotation();
+        
+        // Auto-rotation demo (optional)
+        let autoRotate = false;
+        setInterval(() => {
+            if (!isDragging && autoRotate) {
+                rotationY += 0.5;
+                updateCubeRotation();
+            }
+        }, 50);
+        
+        // Enable auto-rotation on 'a' key press
+        document.addEventListener('keydown', (e) => {
+            if (e.key.toLowerCase() === 'a') {
+                autoRotate = !autoRotate;
+            }
+        });
+    </script>
+</body>
+</html>
