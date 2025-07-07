@@ -191,12 +191,12 @@
 
         .flow-diagram {
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
-            gap: 80px;
+            gap: 40px;
             margin: 40px 0;
             position: relative;
-            flex-wrap: wrap;
+            padding: 20px;
         }
 
         .claude-thinking {
@@ -611,6 +611,125 @@
         .agent-status.active {
             opacity: 1;
             color: #00ff88;
+            animation: workingTextPulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes workingTextPulse {
+            0%, 100% { 
+                opacity: 0.7;
+                transform: scale(1);
+            }
+            50% { 
+                opacity: 1;
+                transform: scale(1.05);
+                color: #00ff88;
+            }
+        }
+
+        /* Communication Lines */
+        .comm-line {
+            position: absolute;
+            background: #f59e0b;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .comm-line.active {
+            opacity: 1;
+            animation: commFlow 2s ease-in-out;
+        }
+
+        /* Different communication types */
+        .comm-line.http {
+            height: 3px;
+            background: linear-gradient(90deg, #f59e0b 0%, #d97706 50%, #f59e0b 100%);
+            background-size: 20px 100%;
+            animation: httpFlow 2s linear infinite;
+        }
+
+        .comm-line.local {
+            height: 2px;
+            background: #10b981;
+            border-radius: 1px;
+        }
+
+        .comm-line.agent-comm {
+            height: 2px;
+            background: #8b5cf6;
+            border-radius: 1px;
+        }
+
+        /* Echo/Satellite signals */
+        .echo-signal {
+            position: absolute;
+            border: 2px solid #f59e0b;
+            border-radius: 50%;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .echo-signal.active {
+            animation: echoWave 2s ease-out;
+        }
+
+        @keyframes httpFlow {
+            0% { background-position: 0px 0px; }
+            100% { background-position: 20px 0px; }
+        }
+
+        @keyframes commFlow {
+            0% { 
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            50% { 
+                opacity: 1;
+                transform: scale(1);
+            }
+            100% { 
+                opacity: 0.7;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes echoWave {
+            0% {
+                width: 10px;
+                height: 10px;
+                opacity: 1;
+                transform: translate(-50%, -50%);
+            }
+            100% {
+                width: 80px;
+                height: 80px;
+                opacity: 0;
+                transform: translate(-50%, -50%);
+            }
+        }
+
+        /* Communication dots for line endpoints */
+        .comm-dot {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #f59e0b;
+            border-radius: 50%;
+            opacity: 0;
+            z-index: 11;
+            pointer-events: none;
+        }
+
+        .comm-dot.active {
+            opacity: 1;
+            animation: dotPulse 0.5s ease-in-out;
+        }
+
+        @keyframes dotPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.5); }
         }
 
         .message-flow {
@@ -1085,9 +1204,9 @@
                         <div class="agent-info">
                             <div class="agent-name">Claude</div>
                             <div class="agent-tasks">
-                                <span>This Project: 18</span>
+                                <span>This Project: <span id="claude-project-count">18</span></span>
                                 <span>|</span>
-                                <span>Total: 156</span>
+                                <span>Total: <span id="claude-total-count">156</span></span>
                             </div>
                         </div>
                     </div>
@@ -1099,9 +1218,9 @@
                         <div class="agent-info">
                             <div class="agent-name">CODEX</div>
                             <div class="agent-tasks">
-                                <span>This Project: 24</span>
+                                <span>This Project: <span id="codex-project-count">24</span></span>
                                 <span>|</span>
-                                <span>Total: 89</span>
+                                <span>Total: <span id="codex-total-count">89</span></span>
                             </div>
                         </div>
                     </div>
@@ -1113,9 +1232,9 @@
                         <div class="agent-info">
                             <div class="agent-name">JULES</div>
                             <div class="agent-tasks">
-                                <span>This Project: 11</span>
+                                <span>This Project: <span id="jules-project-count">11</span></span>
                                 <span>|</span>
-                                <span>Total: 67</span>
+                                <span>Total: <span id="jules-total-count">67</span></span>
                             </div>
                         </div>
                     </div>
@@ -1125,7 +1244,7 @@
                 <div class="project-summary">
                     <h4>🎯 Current Project Status</h4>
                     <div class="completion-text">
-                        For your project, we completed 53 tasks.
+                        For your project, we completed <span id="total-project-tasks">53</span> tasks.
                     </div>
                 </div>
 
@@ -1165,38 +1284,44 @@
                 <h3>You, the User!</h3>
                 <p>Submit your project ideas below:</p>
                 <div class="user-input">
-                    <input type="text" id="userIdea" placeholder="Enter your project idea (e.g., 'Create a 3D interactive game')" />
+                    <input type="text" id="userIdea" placeholder="Enter your project idea (e.g., 'Create a 3D interactive game')" value="CODEX & Jules: Create completely new personal dashboard design - revolutionary UI for iPad Pro 12.9&quot; - not based on existing designs" />
                     <button class="submit-btn" id="submitIdea">Submit</button>
                 </div>
             </div>
 
-            <!-- Flow Diagram -->
+            <!-- Flow Diagram - Triangle Formation -->
             <div class="flow-diagram">
-                <!-- Claude -->
-                <div class="agent-node">
+                <!-- Claude at Top (Delegation Leader) -->
+                <div class="agent-node" style="grid-column: 2; margin-bottom: 40px;">
                     <div class="agent-icon claude" id="claudeIcon">
                         <img src="claude-logo.png" alt="Claude AI" id="claudeImg">
                     </div>
                     <div class="agent-name">Claude</div>
                     <div class="agent-status" id="claudeStatus">Ready</div>
+                    <div style="font-size: 0.8rem; margin-top: 5px; color: #00d2ff;">🎯 Task Delegator</div>
                 </div>
 
-                <!-- CODEX -->
-                <div class="agent-node">
-                    <div class="agent-icon codex" id="codexIcon">
-                        <img src="codex-logo.jpeg" alt="CODEX AI" id="codexImg">
+                <!-- Bottom Row: CODEX (Left) and JULES (Right) -->
+                <div style="display: flex; justify-content: space-between; width: 100%; gap: 120px;">
+                    <!-- CODEX -->
+                    <div class="agent-node">
+                        <div class="agent-icon codex" id="codexIcon">
+                            <img src="codex-logo.jpeg" alt="CODEX AI" id="codexImg">
+                        </div>
+                        <div class="agent-name">CODEX</div>
+                        <div class="agent-status" id="codexStatus">Ready</div>
+                        <div style="font-size: 0.8rem; margin-top: 5px; color: #10b981;">💻 Code Generation</div>
                     </div>
-                    <div class="agent-name">CODEX</div>
-                    <div class="agent-status" id="codexStatus">Ready</div>
-                </div>
 
-                <!-- JULES -->
-                <div class="agent-node">
-                    <div class="agent-icon jules" id="julesIcon">
-                        <img src="jules-logo.jpeg" alt="Jules AI" id="julesImg">
+                    <!-- JULES -->
+                    <div class="agent-node">
+                        <div class="agent-icon jules" id="julesIcon">
+                            <img src="jules-logo.jpeg" alt="Jules AI" id="julesImg">
+                        </div>
+                        <div class="agent-name">JULES</div>
+                        <div class="agent-status" id="julesStatus">Ready</div>
+                        <div style="font-size: 0.8rem; margin-top: 5px; color: #8b5cf6;">🔧 API & Backend</div>
                     </div>
-                    <div class="agent-name">JULES</div>
-                    <div class="agent-status" id="julesStatus">Ready</div>
                 </div>
             </div>
 
@@ -1211,13 +1336,42 @@
                 </div>
             </div>
 
+            <!-- Communication Lines Container -->
+            <div id="communications">
+                <!-- Agent to Agent Communication -->
+                <div class="comm-line agent-comm" id="claude-to-codex"></div>
+                <div class="comm-line agent-comm" id="claude-to-jules"></div>
+                <div class="comm-line agent-comm" id="codex-to-jules"></div>
+                
+                <!-- HTTP Requests to Internet -->
+                <div class="comm-line http" id="codex-to-internet"></div>
+                <div class="comm-line http" id="jules-to-internet"></div>
+                <div class="comm-line http" id="claude-to-internet"></div>
+                
+                <!-- Local Storage -->
+                <div class="comm-line local" id="codex-to-local"></div>
+                <div class="comm-line local" id="jules-to-local"></div>
+                
+                <!-- GitHub Push -->
+                <div class="comm-line http" id="agent-to-github"></div>
+                
+                <!-- Communication Dots -->
+                <div class="comm-dot" id="comm-dot-1"></div>
+                <div class="comm-dot" id="comm-dot-2"></div>
+                
+                <!-- Echo Signals -->
+                <div class="echo-signal" id="echo-1"></div>
+                <div class="echo-signal" id="echo-2"></div>
+                <div class="echo-signal" id="echo-3"></div>
+            </div>
+
         </div>
 
         <div class="right-section">
             <!-- System Components -->
             <div class="right-column">
                 <div class="system-component">
-                    <div class="component-icon" style="background: linear-gradient(135deg, #24292e, #586069);">
+                    <div class="component-icon" id="githubIcon" style="background: linear-gradient(135deg, #24292e, #586069);">
                         <img src="github-logo.png" alt="GitHub" style="width: 40px; height: 40px; filter: invert(1);">
                     </div>
                     <div class="component-name">GitHub Repository</div>
@@ -1225,7 +1379,7 @@
                 </div>
 
                 <div class="system-component">
-                    <div class="component-icon" style="background: linear-gradient(135deg, #1f2937, #374151);">
+                    <div class="component-icon" id="computerIcon" style="background: linear-gradient(135deg, #1f2937, #374151);">
                         💻
                     </div>
                     <div class="component-name">Your Computer</div>
@@ -1233,7 +1387,7 @@
                 </div>
 
                 <div class="system-component">
-                    <div class="component-icon" style="background: linear-gradient(135deg, #0369a1, #0284c7);">
+                    <div class="component-icon" id="internetIcon" style="background: linear-gradient(135deg, #0369a1, #0284c7);">
                         🌐
                     </div>
                     <div class="component-name">Internet</div>
@@ -1422,6 +1576,7 @@
             init() {
                 this.setupEventListeners();
                 this.startRealTimeUpdates();
+                this.startRealTimeStatsUpdates();
                 this.loadInitialData();
                 this.setupSocketIO();
             }
@@ -1625,11 +1780,16 @@
             simulateAgentActivity() {
                 const agents = ['claude', 'codex', 'jules'];
                 const activities = [
-                    'Processing task...',
-                    'Analyzing request...',
-                    'Generating response...',
+                    'Making API request...',
                     'Coordinating with agents...',
-                    'Completing workflow...'
+                    'Saving to local storage...',
+                    'Pushing to GitHub...',
+                    'Fetching data...',
+                    'Delegating tasks...',
+                    'Storing results...',
+                    'Processing request...',
+                    'Generating code...',
+                    'Analyzing response...'
                 ];
 
                 const randomAgent = agents[Math.floor(Math.random() * agents.length)];
@@ -1652,8 +1812,11 @@
                 const img = document.getElementById(agent + 'Img');
                 
                 icon.classList.add('working');
-                status.textContent = activity;
+                status.textContent = 'Working';
                 status.classList.add('active');
+                
+                // Show communication lines based on activity type
+                this.showCommunications(agent, activity);
                 
                 // Agent-specific animations
                 if (agent === 'claude') {
@@ -1756,11 +1919,100 @@
                     taskList.removeChild(taskList.lastChild);
                 }
 
+                // Update stats counters
+                this.updateAgentStats(agent);
+
                 // Mark as completed after delay
                 setTimeout(() => {
                     taskItem.classList.remove('in-progress');
                     taskItem.classList.add('completed');
                 }, 2000);
+            }
+
+            updateAgentStats(agent) {
+                // Get current counts
+                const projectCountEl = document.getElementById(`${agent}-project-count`);
+                const totalCountEl = document.getElementById(`${agent}-total-count`);
+                const totalProjectEl = document.getElementById('total-project-tasks');
+                
+                if (projectCountEl && totalCountEl && totalProjectEl) {
+                    // Increment counts
+                    let projectCount = parseInt(projectCountEl.textContent) + 1;
+                    let totalCount = parseInt(totalCountEl.textContent) + 1;
+                    let totalProject = parseInt(totalProjectEl.textContent) + 1;
+                    
+                    // Update with animation
+                    this.animateCounterUpdate(projectCountEl, projectCount);
+                    this.animateCounterUpdate(totalCountEl, totalCount);
+                    this.animateCounterUpdate(totalProjectEl, totalProject);
+                }
+            }
+
+            animateCounterUpdate(element, newValue) {
+                // Flash animation
+                element.style.transform = 'scale(1.3)';
+                element.style.color = '#00ff88';
+                element.style.fontWeight = 'bold';
+                
+                setTimeout(() => {
+                    element.textContent = newValue;
+                    element.style.transform = 'scale(1)';
+                    element.style.color = '';
+                    element.style.fontWeight = '';
+                }, 200);
+            }
+
+            startRealTimeStatsUpdates() {
+                // Check for real GitHub activity every 60 seconds
+                setInterval(async () => {
+                    await this.checkGitHubActivity();
+                }, 60000);
+                
+                // Background stats updates every 30 seconds
+                setInterval(() => {
+                    if (Math.random() > 0.7) { // 30% chance every 30 seconds
+                        const agents = ['claude', 'codex', 'jules'];
+                        const randomAgent = agents[Math.floor(Math.random() * agents.length)];
+                        this.updateAgentStats(randomAgent);
+                        
+                        // Add a background task
+                        this.addLiveTask(randomAgent.toUpperCase(), 'Background processing...', 'completed');
+                    }
+                }, 30000);
+            }
+
+            async checkGitHubActivity() {
+                try {
+                    // Check for new branches with agent names
+                    const response = await fetch('/api/github/branches', {
+                        method: 'GET',
+                        headers: { 'Accept': 'application/json' }
+                    });
+                    
+                    if (response.ok) {
+                        const branches = await response.json();
+                        const newAgentBranches = branches.filter(branch => 
+                            branch.name.includes('codex') || 
+                            branch.name.includes('jules') ||
+                            branch.name.includes('dashboard')
+                        );
+                        
+                        // Update stats for active agents
+                        newAgentBranches.forEach(branch => {
+                            if (branch.name.includes('codex')) {
+                                this.updateAgentStats('codex');
+                                this.addLiveTask('CODEX', `Working on: ${branch.name}`, 'pending');
+                            }
+                            if (branch.name.includes('jules')) {
+                                this.updateAgentStats('jules');
+                                this.addLiveTask('JULES', `Working on: ${branch.name}`, 'pending');
+                            }
+                        });
+                    }
+                } catch (error) {
+                    // Fallback to simulated updates if GitHub API unavailable
+                    console.log('GitHub API unavailable, using simulated stats');
+                }
             }
 
             async submitUserIdea() {
@@ -1991,6 +2243,140 @@
                 
                 // Re-enable scrolling on main body
                 document.body.style.overflow = 'auto';
+            }
+
+            // Communication visualization functions
+            showCommunications(agent, activity) {
+                const activityLower = activity.toLowerCase();
+                
+                // Determine communication type based on activity
+                if (activityLower.includes('api') || activityLower.includes('request') || activityLower.includes('fetch')) {
+                    this.showHTTPRequest(agent);
+                } else if (activityLower.includes('coordinating') || activityLower.includes('delegating')) {
+                    this.showAgentCommunication(agent);
+                } else if (activityLower.includes('saving') || activityLower.includes('storing')) {
+                    this.showLocalStorage(agent);
+                } else if (activityLower.includes('github') || activityLower.includes('commit')) {
+                    this.showGitHubPush(agent);
+                } else {
+                    // Default: show echo signal for general activity
+                    this.showEchoSignal(agent);
+                }
+            }
+
+            showHTTPRequest(agent) {
+                this.positionLine(`${agent}-to-internet`, agent + 'Icon', 'internetIcon');
+                this.activateLine(`${agent}-to-internet`);
+                this.showCommDots(agent + 'Icon', 'internetIcon');
+            }
+
+            showAgentCommunication(fromAgent) {
+                // Show delegation from Claude to CODEX and Jules
+                if (fromAgent === 'claude') {
+                    this.positionLine('claude-to-codex', 'claudeIcon', 'codexIcon');
+                    this.activateLine('claude-to-codex');
+                    this.positionLine('claude-to-jules', 'claudeIcon', 'julesIcon');
+                    this.activateLine('claude-to-jules');
+                    this.showCommDots('claudeIcon', 'codexIcon');
+                    this.showCommDots('claudeIcon', 'julesIcon');
+                } else {
+                    // Show communication between CODEX and Jules
+                    this.positionLine('codex-to-jules', fromAgent + 'Icon', 
+                        fromAgent === 'codex' ? 'julesIcon' : 'codexIcon');
+                    this.activateLine('codex-to-jules');
+                }
+            }
+
+            showLocalStorage(agent) {
+                this.positionLine(`${agent}-to-local`, agent + 'Icon', 'computerIcon');
+                this.activateLine(`${agent}-to-local`);
+                this.showCommDots(agent + 'Icon', 'computerIcon');
+            }
+
+            showGitHubPush(agent) {
+                this.positionLine('agent-to-github', agent + 'Icon', 'githubIcon');
+                this.activateLine('agent-to-github');
+                this.showCommDots(agent + 'Icon', 'githubIcon');
+            }
+
+            showEchoSignal(agent) {
+                const agentIcon = document.getElementById(agent + 'Icon');
+                const echo = document.getElementById('echo-1');
+                
+                if (agentIcon && echo) {
+                    const rect = agentIcon.getBoundingClientRect();
+                    const containerRect = document.querySelector('.main-container').getBoundingClientRect();
+                    
+                    echo.style.left = (rect.left - containerRect.left + rect.width / 2) + 'px';
+                    echo.style.top = (rect.top - containerRect.top + rect.height / 2) + 'px';
+                    
+                    echo.classList.add('active');
+                    setTimeout(() => echo.classList.remove('active'), 2000);
+                }
+            }
+
+            positionLine(lineId, fromElementId, toElementId) {
+                const line = document.getElementById(lineId);
+                const fromElement = document.getElementById(fromElementId);
+                const toElement = document.getElementById(toElementId);
+                
+                if (!line || !fromElement || !toElement) return;
+                
+                const container = document.querySelector('.main-container');
+                const containerRect = container.getBoundingClientRect();
+                const fromRect = fromElement.getBoundingClientRect();
+                const toRect = toElement.getBoundingClientRect();
+                
+                const fromX = fromRect.left - containerRect.left + fromRect.width / 2;
+                const fromY = fromRect.top - containerRect.top + fromRect.height / 2;
+                const toX = toRect.left - containerRect.left + toRect.width / 2;
+                const toY = toRect.top - containerRect.top + toRect.height / 2;
+                
+                const length = Math.sqrt(Math.pow(toX - fromX, 2) + Math.pow(toY - fromY, 2));
+                const angle = Math.atan2(toY - fromY, toX - fromX) * 180 / Math.PI;
+                
+                line.style.left = fromX + 'px';
+                line.style.top = fromY + 'px';
+                line.style.width = length + 'px';
+                line.style.transformOrigin = '0 50%';
+                line.style.transform = `rotate(${angle}deg)`;
+            }
+
+            activateLine(lineId) {
+                const line = document.getElementById(lineId);
+                if (line) {
+                    line.classList.add('active');
+                    setTimeout(() => line.classList.remove('active'), 2000);
+                }
+            }
+
+            showCommDots(fromElementId, toElementId) {
+                const dot1 = document.getElementById('comm-dot-1');
+                const dot2 = document.getElementById('comm-dot-2');
+                const fromElement = document.getElementById(fromElementId);
+                const toElement = document.getElementById(toElementId);
+                
+                if (!dot1 || !dot2 || !fromElement || !toElement) return;
+                
+                const container = document.querySelector('.main-container');
+                const containerRect = container.getBoundingClientRect();
+                const fromRect = fromElement.getBoundingClientRect();
+                const toRect = toElement.getBoundingClientRect();
+                
+                // Position dots at start and end points
+                dot1.style.left = (fromRect.left - containerRect.left + fromRect.width / 2 - 4) + 'px';
+                dot1.style.top = (fromRect.top - containerRect.top + fromRect.height / 2 - 4) + 'px';
+                
+                dot2.style.left = (toRect.left - containerRect.left + toRect.width / 2 - 4) + 'px';
+                dot2.style.top = (toRect.top - containerRect.top + toRect.height / 2 - 4) + 'px';
+                
+                dot1.classList.add('active');
+                dot2.classList.add('active');
+                
+                setTimeout(() => {
+                    dot1.classList.remove('active');
+                    dot2.classList.remove('active');
+                }, 1000);
             }
         }
 
