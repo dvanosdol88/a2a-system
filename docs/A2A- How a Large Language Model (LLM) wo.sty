@@ -1,0 +1,49 @@
+A2A- How a Large Language Model (LLM) works
+
+From Meta.AI
+How a Large Language Model Works
+Definitions
+Tokens: Individual units of text, such as words or characters, that are used as input for the model. For example, the sentence "The sun is shining" would be broken down into individual tokens: ["The", "sun", "is", "shining"].
+Contextual Embeddings: Representations of words or tokens that capture their meaning and context in a specific sentence or text. These embeddings allow the model to understand the nuances of language and generate more accurate text.
+Knowledge Graph: A vast database of words, concepts, and relationships that the model uses to generate text. This graph contains a vast amount of knowledge that the model can draw upon to create coherent and contextually relevant text.
+Predicted Words: The words that the model predicts will come next in a sentence or text, based on the context and the knowledge graph. These predictions are made based on probability distributions, which allow the model to generate text that is likely to be coherent and natural-sounding.
+Generated Sentence: The final output of the model, which is a sentence or text that has been generated based on the input and the predictions made by the model.
+Step 1: Input
++---------------+
+|  📝 Input Text  |
+|  (e.g. "The")  |
++---------------+
+Step 2: Tokenization
++---------------+        +-------+
+|  📊 Input Text  |  --->  |  🔗 Tokens  |
+|  (e.g. "The")  |        |  ["The"]  |
++---------------+        +-------+
+Step 3: Contextualization
++-------+     +---------------+
+| 🔍 Tokens| ---> |  🤖 Contextual  |
+| ["The"]|     |  Embeddings  |
++-------+     +---------------+
+Step 4: Information Extraction
++---------------+     +------------------+
+|  📚 Contextual  | ---> |  🗂️ Knowledge Graph  |
+|  Embeddings  |     |  ( vast knowledge  |
++---------------+     |   of words, concepts) |
++------------------+
+Step 5: Prediction
++------------------+     +---------------+
+|  🗂️ Knowledge Graph  | ---> |  🔮 Predicted Words  |
+|  (vast knowledge)  |     |  ( probability    |
++------------------+     |   distribution)    |
++---------------+
+Step 6: Sentence Generation
++---------------+     +------------------+
+|  💡 Predicted Words  | ---> |  📄 Generated Sentence|
+|  (probability    |     |  (e.g. "The sun    |
+|   distribution)    |     |   is shining.")     |
++---------------+     +------------------+
+Step 7: Output
++------------------+
+|  📢 Generated Sentence|
+|  (e.g. "The sun    |
+|   is shining.")     |
++------------------+

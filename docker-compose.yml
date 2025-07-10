@@ -1,0 +1,104 @@
+version: '3.8'
+
+services:
+  # Jules API Server
+  jules:
+    build: .
+    container_name: a2a-jules
+    command: python api/jules_server.py
+    ports:
+      - "5006:5006"
+    environment:
+      - A2A_JULES_HOST=0.0.0.0
+      - A2A_JULES_PORT=5006
+      - A2A_DB_TYPE=${A2A_DB_TYPE:-sqlite}
+      - A2A_DATABASE_URL=${A2A_DATABASE_URL:-/app/data/a2a_system.db}
+      - A2A_ENABLE_AUTH=${A2A_ENABLE_AUTH:-false}
+      - A2A_SECRET_KEY=${A2A_SECRET_KEY:-change-me-in-production}
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    networks:
+      - a2a-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5006/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Dashboard Server
+  dashboard:
+    build: .
+    container_name: a2a-dashboard
+    command: python monitoring/dashboard_server.py
+    ports:
+      - "5003:5003"
+    environment:
+      - A2A_DASHBOARD_HOST=0.0.0.0
+      - A2A_DASHBOARD_PORT=5003
+      - A2A_JULES_API_URL=http://jules:5006
+      - A2A_DB_TYPE=${A2A_DB_TYPE:-sqlite}
+      - A2A_DATABASE_URL=${A2A_DATABASE_URL:-/app/data/a2a_system.db}
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    networks:
+      - a2a-network
+    depends_on:
+      - jules
+
+  # FlowForge UI
+  flowforge:
+    build: .
+    container_name: a2a-flowforge
+    command: python ui/flowforge/server.py
+    ports:
+      - "5002:5002"
+    environment:
+      - A2A_JULES_API_URL=http://jules:5006
+    networks:
+      - a2a-network
+    depends_on:
+      - jules
+
+  # CODEX Agent (optional - can be run externally)
+  codex:
+    build: .
+    container_name: a2a-codex
+    command: python agents/codex_agent.py
+    environment:
+      - A2A_JULES_API_URL=http://jules:5006
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - GITHUB_OWNER=${GITHUB_OWNER}
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - a2a-network
+    depends_on:
+      - jules
+    profiles:
+      - agents
+
+  # PostgreSQL (optional - for production)
+  postgres:
+    image: postgres:16-alpine
+    container_name: a2a-postgres
+    environment:
+      - POSTGRES_DB=a2a_system
+      - POSTGRES_USER=${POSTGRES_USER:-a2a_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-change-me}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - a2a-network
+    profiles:
+      - postgres
+
+networks:
+  a2a-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

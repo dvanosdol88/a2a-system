@@ -370,5 +370,17 @@
     "task": "\ud83d\udcf1 DASHBOARD BACKEND: Enhance personal dashboard backend for new UI. Add: 1) Responsive API endpoints, 2) Touch gesture support data, 3) Mobile-optimized data structures, 4) Calendar API integration, 5) Enhanced AI chat endpoints. Coordinate with CODEX for seamless mobile experience.",
     "created": "2025-07-06T17:35:11Z",
     "assigned_to": "jules"
+  },
+  {
+    "task": "JULES: Analyze all Python files in the A2A system and identify all hardcoded localhost/127.0.0.1 references. Create a comprehensive list and design an environment variable configuration system to replace them.",
+    "created": "2025-07-10T19:15:30Z"
+  },
+  {
+    "task": "CODEX: Design and implement a secure authentication system for the A2A API endpoints. Include: 1) API key generation and management, 2) Rate limiting middleware, 3) Request validation, 4) Secure token storage. Create a production-ready security layer.",
+    "created": "2025-07-10T19:16:04Z"
+  },
+  {
+    "task": "JULES: Remove all instances of hardcoded GitHub username dvanosdol88 from the codebase. Replace with environment variable GITHUB_OWNER. Update documentation to reflect this change.",
+    "created": "2025-07-10T19:19:36Z"
   }
 ]
