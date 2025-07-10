@@ -68,6 +68,6 @@ services:
 
 databases:
   - name: a2a-db
-    plan: starter
+    plan: free
     databaseName: a2a_production
     user: a2a_user
