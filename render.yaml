@@ -1,4 +1,4 @@
-# Render.com Deployment Configuration - Minimal Setup
+# Render.com Deployment Configuration - SQLite Version
 # Deploy with: render blueprint launch
 
 services:
@@ -16,11 +16,9 @@ services:
       - key: A2A_JULES_PORT
         value: 5006
       - key: A2A_DB_TYPE
-        value: postgresql
+        value: sqlite  # Using SQLite instead of PostgreSQL
       - key: A2A_DATABASE_URL
-        fromDatabase:
-          name: a2a-db
-          property: connectionString
+        value: /app/data/a2a_system.db  # SQLite file path
       - key: A2A_SECRET_KEY
         generateValue: true
       - key: A2A_ENABLE_AUTH
@@ -30,9 +28,8 @@ services:
       - key: GITHUB_OWNER
         value: dvanosdol88
     healthCheckPath: /health
-
-databases:
-  - name: a2a-db
-    plan: free
-    databaseName: a2a_production
-    user: a2a_user
+    # Add persistent disk for SQLite database
+    disk:
+      name: a2a-data
+      mountPath: /app/data
+      sizeGB: 1  # 1GB persistent storage
