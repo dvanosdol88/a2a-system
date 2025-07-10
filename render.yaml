@@ -7,7 +7,7 @@ services:
     name: a2a-jules
     env: python
     region: oregon
-    plan: free  # Using free tier
+    plan: starter  # Paid tier for continuous operation
     buildCommand: pip install -r requirements.txt
     startCommand: python api/jules_server.py
     envVars:
