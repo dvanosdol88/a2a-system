@@ -31,19 +31,8 @@ packaging>=25.0
 pluggy>=1.6.0
 pygments>=2.19.2
 
-# Enhanced Testing Framework Dependencies
-asyncio  # For async testing capabilities (built-in Python 3.4+)
-threading  # For concurrent testing (built-in)
-dataclasses  # For test data structures (built-in Python 3.7+)
-enum  # For test enums (built-in)
-uuid  # For message IDs (built-in)
-datetime  # For timestamps (built-in)
-pathlib  # For file handling (built-in Python 3.4+)
-json  # For data serialization (built-in)
-subprocess  # For test orchestration (built-in)
-
-# Note: Most enhanced testing dependencies are built-in Python modules
-# The enhanced testing framework uses only standard library modules beyond the core dependencies
+# Note: Enhanced testing framework uses only standard library modules
+# No additional dependencies needed beyond core packages above
 
 # Monitoring Dashboard Dependencies
 psutil>=5.9.0  # System resource monitoring
