@@ -382,5 +382,20 @@
   {
     "task": "JULES: Remove all instances of hardcoded GitHub username dvanosdol88 from the codebase. Replace with environment variable GITHUB_OWNER. Update documentation to reflect this change.",
     "created": "2025-07-10T19:19:36Z"
+  },
+  {
+    "task": "DASHBOARD FRONTEND ENHANCEMENT: Analyze ChatGPT-Google-Dashboard frontend and implement: 1) Camera capture widget for document scanning, 2) OCR integration for metadata extraction, 3) Smart folder selection based on document type, 4) Upload progress indicators. Reference: /mnt/c/Users/david/Downloads/document_capture_storage_roadmap.md",
+    "created": "2025-07-10T20:18:15Z",
+    "assigned_to": "codex"
+  },
+  {
+    "task": "DASHBOARD BACKEND API: Create REST endpoints for ChatGPT-Google-Dashboard: 1) POST /api/capture/upload - handle document uploads with metadata, 2) POST /api/ocr/extract - extract text and metadata from images, 3) GET /api/drive/folders - get smart folder suggestions, 4) WebSocket for real-time upload progress. Integrate with existing Google Drive auth.",
+    "created": "2025-07-10T20:18:15Z",
+    "assigned_to": "jules"
+  },
+  {
+    "task": "PROJECT COORDINATION: ChatGPT-Google-Dashboard camera feature implementation. CODEX is handling frontend (camera widget, OCR, smart folders). JULES is building backend APIs (upload, OCR extraction, folder suggestions). Claude monitoring progress. Target: Document capture \u2192 OCR \u2192 Smart Google Drive storage.",
+    "created": "2025-07-10T20:22:30Z",
+    "assigned_to": "all"
   }
 ]

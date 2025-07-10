@@ -1,4 +1,4 @@
-# Render.com Deployment Configuration - SQLite Version
+# Render.com Deployment Configuration - With Interactive Dashboard
 # Deploy with: render blueprint launch
 
 services:
@@ -33,3 +33,20 @@ services:
       name: a2a-data
       mountPath: /app/data
       sizeGB: 1  # 1GB persistent storage
+
+  # Interactive Dashboard - Visual Interface
+  - type: web
+    name: a2a-dashboard
+    env: python
+    region: oregon
+    plan: starter  # Paid tier for continuous operation
+    buildCommand: pip install -r requirements.txt Flask-SocketIO
+    startCommand: python dashboard/server.py
+    envVars:
+      - key: A2A_DASHBOARD_HOST
+        value: 0.0.0.0
+      - key: A2A_DASHBOARD_PORT
+        value: 5003
+      - key: JULES_API_BASE
+        value: https://a2a-jules.onrender.com  # Point to production Jules API
+    healthCheckPath: /

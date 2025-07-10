@@ -37,6 +37,8 @@ pygments>=2.19.2
 
 # Monitoring Dashboard Dependencies
 psutil>=5.9.0  # System resource monitoring
+Flask-SocketIO>=5.4.1  # Real-time dashboard updates
+python-socketio>=5.12.0  # SocketIO client
 # Flask already included above for monitoring dashboard server
 
 # Additional monitoring capabilities (all built-in):

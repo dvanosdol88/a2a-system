@@ -197,6 +197,12 @@
       "acknowledged": "2025-07-06T21:34:02Z",
       "completed": "2025-07-06T21:34:02Z",
       "response": "\ud83e\uddea CODEX: Test protocol initiated. System validation in progress."
+    },
+    {
+      "id": 89,
+      "task": "DASHBOARD FRONTEND ENHANCEMENT: Analyze ChatGPT-Google-Dashboard frontend and implement: 1) Camera capture widget for document scanning, 2) OCR integration for metadata extraction, 3) Smart folder selection based on document type, 4) Upload progress indicators. Reference: /mnt/c/Users/david/Downloads/document_capture_storage_roadmap.md",
+      "created": "2025-07-10T20:18:15Z",
+      "status": "pending"
     }
   ],
   "jules": [
@@ -246,6 +252,20 @@
       "id": 82,
       "task": "A2A DASHBOARD API: Enhance Jules server with real-time dashboard endpoints. Add: 1) /dashboard/agents/status - agent health/activity, 2) /dashboard/messages/flow - message flow data, 3) /dashboard/demo - demo mode triggers, 4) WebSocket support for real-time updates. Coordinate with CODEX for seamless integration.",
       "created": "2025-07-06T21:33:54Z",
+      "status": "pending"
+    },
+    {
+      "id": 90,
+      "task": "DASHBOARD BACKEND API: Create REST endpoints for ChatGPT-Google-Dashboard: 1) POST /api/capture/upload - handle document uploads with metadata, 2) POST /api/ocr/extract - extract text and metadata from images, 3) GET /api/drive/folders - get smart folder suggestions, 4) WebSocket for real-time upload progress. Integrate with existing Google Drive auth.",
+      "created": "2025-07-10T20:18:15Z",
+      "status": "pending"
+    }
+  ],
+  "all": [
+    {
+      "id": 91,
+      "task": "PROJECT COORDINATION: ChatGPT-Google-Dashboard camera feature implementation. CODEX is handling frontend (camera widget, OCR, smart folders). JULES is building backend APIs (upload, OCR extraction, folder suggestions). Claude monitoring progress. Target: Document capture \u2192 OCR \u2192 Smart Google Drive storage.",
+      "created": "2025-07-10T20:22:30Z",
       "status": "pending"
     }
   ]
