@@ -1,13 +1,13 @@
-# Render.com Deployment Configuration
+# Render.com Deployment Configuration - Minimal Setup
 # Deploy with: render blueprint launch
 
 services:
-  # Jules API Server
+  # Jules API Server - Core A2A Service (REQUIRED)
   - type: web
     name: a2a-jules
     env: python
     region: oregon
-    plan: starter
+    plan: free  # Using free tier
     buildCommand: pip install -r requirements.txt
     startCommand: python api/jules_server.py
     envVars:
@@ -24,47 +24,12 @@ services:
       - key: A2A_SECRET_KEY
         generateValue: true
       - key: A2A_ENABLE_AUTH
-        value: true
+        value: false  # Simplified for now
       - key: GITHUB_TOKEN
         sync: false
       - key: GITHUB_OWNER
         value: dvanosdol88
     healthCheckPath: /health
-
-  # Dashboard Server
-  - type: web
-    name: a2a-dashboard
-    env: python
-    region: oregon
-    plan: starter
-    buildCommand: pip install -r requirements.txt
-    startCommand: python monitoring/dashboard_server.py
-    envVars:
-      - key: A2A_DASHBOARD_HOST
-        value: 0.0.0.0
-      - key: A2A_DASHBOARD_PORT
-        value: 5003
-      - key: A2A_JULES_API_URL
-        value: https://a2a-jules.onrender.com
-      - key: A2A_DB_TYPE
-        value: postgresql
-      - key: A2A_DATABASE_URL
-        fromDatabase:
-          name: a2a-db
-          property: connectionString
-    healthCheckPath: /health
-
-  # FlowForge UI
-  - type: web
-    name: a2a-flowforge
-    env: python
-    region: oregon
-    plan: starter
-    buildCommand: pip install -r requirements.txt
-    startCommand: python ui/flowforge/server.py
-    envVars:
-      - key: A2A_JULES_API_URL
-        value: https://a2a-jules.onrender.com
 
 databases:
   - name: a2a-db
