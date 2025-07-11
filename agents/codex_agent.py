@@ -15,7 +15,7 @@ from github_manager import GitHubManager
 from git_manager import GitManager
 
 class CODEXAgent:
-    def __init__(self, api_base="http://127.0.0.1:5000", agent_id="codex"):
+    def __init__(self, api_base="http://127.0.0.1:5003", agent_id="codex"):
         self.api_base = api_base
         self.agent_id = agent_id
         self.running = False

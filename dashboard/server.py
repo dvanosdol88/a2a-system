@@ -4,7 +4,7 @@ A2A Interactive Dashboard Server
 Serves the interactive dashboard with real-time API integration
 """
 
-from flask import Flask, render_template_string, jsonify, request, send_from_directory
+from flask import Flask, render_template_string, jsonify, request, send_from_directory, redirect
 from flask_socketio import SocketIO, emit
 from flask_cors import CORS
 import json
