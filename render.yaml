@@ -9,7 +9,7 @@ services:
     region: oregon
     plan: starter  # Paid tier for continuous operation
     buildCommand: pip install -r requirements.txt
-    startCommand: python scripts/ensure_data_files.py && python api/jules_server.py
+    startCommand: python scripts/ensure_data_files.py && gunicorn api.jules_server:app
     envVars:
       - key: A2A_JULES_HOST
         value: 0.0.0.0
@@ -39,7 +39,7 @@ services:
     region: oregon
     plan: starter  # Paid tier for continuous operation
     buildCommand: pip install -r requirements.txt
-    startCommand: python scripts/ensure_data_files.py && python dashboard/server.py
+    startCommand: python scripts/ensure_data_files.py && gunicorn --worker-class eventlet -w 1 dashboard.server:app
     envVars:
       - key: A2A_DASHBOARD_HOST
         value: 0.0.0.0

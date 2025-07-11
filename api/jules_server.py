@@ -13,6 +13,10 @@ AGENT_TASKS_FILE = BASE / "shared" / "agent_tasks.json"
 def _now():
     return datetime.datetime.utcnow().isoformat(timespec="seconds") + "Z"
 
+@app.route("/")
+def index():
+    return {"service": "A2A Jules API", "status": "running", "endpoints": ["/health", "/tasks", "/add_task"]}
+
 @app.route("/health")
 def health():
     return {"status": "ok", "server_time": _now()}

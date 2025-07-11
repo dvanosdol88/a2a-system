@@ -67,7 +67,15 @@ def stream_terminal_output():
 def dashboard():
     """Serve the interactive dashboard"""
     dashboard_file = DASHBOARD_DIR / "interactive_dashboard.html"
-    return render_template_string(dashboard_file.read_text())
+    if dashboard_file.exists():
+        return render_template_string(dashboard_file.read_text())
+    else:
+        return jsonify({
+            "service": "A2A Dashboard",
+            "status": "running",
+            "message": "Dashboard HTML file not found",
+            "endpoints": ["/api/health", "/api/agents/status", "/api/tasks"]
+        })
 
 @app.route('/<filename>')
 def serve_static(filename):
