@@ -22,7 +22,7 @@ app.config['SECRET_KEY'] = 'a_simple_secret_key'
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 # Configuration
-DASHBOARD_PORT = int(os.environ.get('A2A_DASHBOARD_PORT', '5003'))
+DASHBOARD_PORT = int(os.environ.get('PORT', os.environ.get('A2A_DASHBOARD_PORT', '5003')))
 JULES_API_BASE = os.environ.get('JULES_API_BASE', "http://127.0.0.1:5000")
 BASE_DIR = Path(__file__).parent.parent
 DASHBOARD_DIR = Path(__file__).parent

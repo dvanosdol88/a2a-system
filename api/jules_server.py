@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from pathlib import Path
 import datetime, json
+import os
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all domains
@@ -108,4 +109,5 @@ def acknowledge_agent_task(agent_id, task_id):
     return {"message": "Task acknowledged"}, 200
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    port = int(os.environ.get('PORT', os.environ.get('A2A_JULES_PORT', '5000')))
+    app.run(host="0.0.0.0", port=port)

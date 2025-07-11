@@ -9,12 +9,10 @@ services:
     region: oregon
     plan: starter  # Paid tier for continuous operation
     buildCommand: pip install -r requirements.txt
-    startCommand: python api/jules_server.py
+    startCommand: python scripts/ensure_data_files.py && python api/jules_server.py
     envVars:
       - key: A2A_JULES_HOST
         value: 0.0.0.0
-      - key: A2A_JULES_PORT
-        value: 5006
       - key: A2A_DB_TYPE
         value: sqlite  # Using SQLite instead of PostgreSQL
       - key: A2A_DATABASE_URL
@@ -40,13 +38,11 @@ services:
     env: python
     region: oregon
     plan: starter  # Paid tier for continuous operation
-    buildCommand: pip install -r requirements.txt Flask-SocketIO
-    startCommand: python dashboard/server.py
+    buildCommand: pip install -r requirements.txt
+    startCommand: python scripts/ensure_data_files.py && python dashboard/server.py
     envVars:
       - key: A2A_DASHBOARD_HOST
         value: 0.0.0.0
-      - key: A2A_DASHBOARD_PORT
-        value: 5003
       - key: JULES_API_BASE
         value: https://a2a-jules.onrender.com  # Point to production Jules API
     healthCheckPath: /
