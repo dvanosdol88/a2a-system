@@ -1,0 +1,75 @@
+name: A2A System Health Check
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'  # Every 30 minutes
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Check Jules API Health
+        id: jules_check
+        run: |
+          response=$(curl -s -w "\n%{http_code}" https://a2a-jules.onrender.com/health)
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+          
+          echo "Jules API Response: $http_code"
+          echo "$body" | jq . || echo "$body"
+          
+          if [ "$http_code" != "200" ]; then
+            echo "Jules API is unhealthy!"
+            exit 1
+          fi
+          
+      - name: Check Dashboard Health
+        id: dashboard_check
+        run: |
+          response=$(curl -s -w "\n%{http_code}" https://a2a-dashboard.onrender.com/api/health)
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+          
+          echo "Dashboard Response: $http_code"
+          echo "$body" | jq . || echo "$body"
+          
+          if [ "$http_code" != "200" ]; then
+            echo "Dashboard is unhealthy!"
+            exit 1
+          fi
+      
+      - name: Create Issue on Failure
+        if: failure()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const title = 'A2A System Health Check Failed';
+            const body = `## Health Check Failed at ${new Date().toISOString()}
+            
+            One or more A2A services are not responding correctly.
+            
+            ### Services Checked:
+            - Jules API: https://a2a-jules.onrender.com/health
+            - Dashboard: https://a2a-dashboard.onrender.com/api/health
+            
+            Please check the [workflow run](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}) for details.`;
+            
+            // Check if issue already exists
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'health-check'
+            });
+            
+            if (issues.data.length === 0) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: body,
+                labels: ['health-check', 'automated']
+              });
+            }

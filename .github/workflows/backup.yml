@@ -1,0 +1,62 @@
+name: A2A Data Backup
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # Daily at 2 AM UTC
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install requests
+      
+      - name: Download production data
+        run: |
+          mkdir -p shared
+          
+          # Download tasks data
+          curl -s https://a2a-jules.onrender.com/tasks > shared/tasks.json
+          echo "Downloaded $(wc -l < shared/tasks.json) lines of task data"
+          
+          # Note: In production, you'd need authenticated endpoints
+          # to download agent_tasks.json and database files
+      
+      - name: Create backup
+        run: |
+          python scripts/backup_data.py
+      
+      - name: Upload backup artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: a2a-backup-${{ github.run_id }}
+          path: backups/*.zip
+          retention-days: 30
+      
+      - name: Create release (weekly)
+        if: github.event.schedule == '0 2 * * 0'  # Sunday backups
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: backup-${{ github.run_id }}
+          release_name: Weekly Backup - ${{ github.run_id }}
+          body: |
+            Automated weekly backup of A2A system data.
+            
+            This backup includes:
+            - Task history
+            - Agent assignments
+            - System configuration
+          draft: false
+          prerelease: false
