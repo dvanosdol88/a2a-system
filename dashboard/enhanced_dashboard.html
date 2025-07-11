@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A2A System - Enhanced Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0c1445 0%, #1e3c72 100%);
+            color: white;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .header {
+            padding: 15px 20px;
+            background: rgba(0, 0, 0, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid rgba(0, 255, 136, 0.3);
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            color: #00ff88;
+        }
+
+        .project-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .project-name {
+            font-size: 1.2rem;
+            color: #fff;
+            background: rgba(0, 255, 136, 0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid #00ff88;
+        }
+
+        .project-tabs {
+            display: flex;
+            gap: 10px;
+        }
+
+        .project-tab {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .project-tab.active {
+            background: rgba(0, 255, 136, 0.3);
+            border-color: #00ff88;
+        }
+
+        .main-container {
+            display: grid;
+            grid-template-columns: 1fr 3fr 1fr;
+            gap: 20px;
+            padding: 20px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        /* Agent Health Cards */
+        .agents-health {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .agent-health-card {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 12px;
+            padding: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s;
+        }
+
+        .agent-health-card.healthy {
+            border-color: #00ff88;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+        }
+
+        .agent-health-card.warning {
+            border-color: #ffaa00;
+            box-shadow: 0 0 20px rgba(255, 170, 0, 0.3);
+        }
+
+        .agent-health-card.critical {
+            border-color: #ff4444;
+            box-shadow: 0 0 20px rgba(255, 68, 68, 0.3);
+        }
+
+        .agent-health-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .agent-name {
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .health-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .health-indicator.healthy {
+            background: #00ff88;
+        }
+
+        .health-indicator.warning {
+            background: #ffaa00;
+        }
+
+        .health-indicator.critical {
+            background: #ff4444;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .health-metrics {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .metric-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+
+        .metric-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff88, #00cc66);
+            transition: width 0.5s ease;
+        }
+
+        .metric-fill.warning {
+            background: linear-gradient(90deg, #ffaa00, #ff8800);
+        }
+
+        .metric-fill.critical {
+            background: linear-gradient(90deg, #ff4444, #cc0000);
+        }
+
+        /* Central Work Area */
+        .work-area {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .activity-feed {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .activity-item {
+            padding: 10px;
+            margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 3px solid #00ff88;
+            border-radius: 4px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .activity-timestamp {
+            font-size: 0.8rem;
+            color: #888;
+            margin-bottom: 5px;
+        }
+
+        .activity-agent {
+            color: #00ff88;
+            font-weight: bold;
+        }
+
+        .activity-description {
+            margin-top: 5px;
+        }
+
+        /* Input Section */
+        .input-section {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .input-label {
+            font-size: 0.9rem;
+            color: #888;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        .task-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(0, 255, 136, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            color: white;
+            font-size: 1rem;
+            min-height: 60px;
+            resize: vertical;
+        }
+
+        .task-input:focus {
+            outline: none;
+            border-color: #00ff88;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .submit-btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #00ff88, #00cc66);
+            border: none;
+            border-radius: 8px;
+            color: #0c1445;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            align-self: flex-end;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 255, 136, 0.4);
+        }
+
+        /* Resource Icons */
+        .resources {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .resource-icon {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .resource-icon:hover {
+            border-color: #00ff88;
+            transform: translateY(-2px);
+        }
+
+        .resource-icon.active {
+            background: rgba(0, 255, 136, 0.2);
+            border-color: #00ff88;
+        }
+
+        .icon-img {
+            width: 48px;
+            height: 48px;
+            filter: brightness(0.9);
+        }
+
+        .resource-label {
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        /* Output Page */
+        .output-page {
+            display: none;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(0, 255, 136, 0.3);
+        }
+
+        .output-content {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 20px;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            line-height: 1.6;
+        }
+
+        .download-btn {
+            padding: 8px 16px;
+            background: rgba(0, 255, 136, 0.2);
+            border: 1px solid #00ff88;
+            border-radius: 6px;
+            color: #00ff88;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .download-btn:hover {
+            background: rgba(0, 255, 136, 0.3);
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #00ff88;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00cc66;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>A2A System</h1>
+        <div class="project-info">
+            <div class="project-name" id="projectName">Untitled Project</div>
+            <div class="project-tabs" id="projectTabs">
+                <!-- Dynamic project tabs will be added here -->
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <!-- Left: Agent Health Monitoring -->
+        <div class="agents-health" id="agentsHealth">
+            <!-- Agent health cards will be dynamically added here -->
+        </div>
+
+        <!-- Center: Work Area -->
+        <div class="work-area">
+            <div class="activity-feed" id="activityFeed">
+                <!-- Real-time activity will be shown here -->
+            </div>
+
+            <div class="input-section">
+                <div class="input-label">Your request:</div>
+                <div class="input-container">
+                    <textarea class="task-input" id="taskInput" placeholder="Describe what you want the agents to build..."></textarea>
+                </div>
+                <button class="submit-btn" onclick="submitTask()">Submit Task</button>
+            </div>
+        </div>
+
+        <!-- Right: Resources -->
+        <div class="resources">
+            <div class="resource-icon" id="githubResource">
+                <svg class="icon-img" viewBox="0 0 24 24" fill="#fff">
+                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                </svg>
+                <div class="resource-label">GitHub</div>
+            </div>
+            <div class="resource-icon" id="computerResource">
+                <svg class="icon-img" viewBox="0 0 24 24" fill="#fff">
+                    <path d="M20 18c1.1 0 1.99-.9 1.99-2L22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2H0v2h24v-2h-4zM4 6h16v10H4V6z"/>
+                </svg>
+                <div class="resource-label">Your Computer</div>
+            </div>
+            <div class="resource-icon" id="internetResource">
+                <svg class="icon-img" viewBox="0 0 24 24" fill="#fff">
+                    <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm6.93 6h-2.95c-.32-1.25-.78-2.45-1.38-3.56 1.84.63 3.37 1.91 4.33 3.56zM12 4.04c.83 1.2 1.48 2.53 1.91 3.96h-3.82c.43-1.43 1.08-2.76 1.91-3.96zM4.26 14C4.1 13.36 4 12.69 4 12s.1-1.36.26-2h3.38c-.08.66-.14 1.32-.14 2 0 .68.06 1.34.14 2H4.26zm.82 2h2.95c.32 1.25.78 2.45 1.38 3.56-1.84-.63-3.37-1.9-4.33-3.56zm2.95-8H5.08c.96-1.66 2.49-2.93 4.33-3.56C8.81 5.55 8.35 6.75 8.03 8zM12 19.96c-.83-1.2-1.48-2.53-1.91-3.96h3.82c-.43 1.43-1.08 2.76-1.91 3.96zM14.34 14H9.66c-.09-.66-.16-1.32-.16-2 0-.68.07-1.35.16-2h4.68c.09.65.16 1.32.16 2 0 .68-.07 1.34-.16 2zm.25 5.56c.6-1.11 1.06-2.31 1.38-3.56h2.95c-.96 1.65-2.49 2.93-4.33 3.56zM16.36 14c.08-.66.14-1.32.14-2 0-.68-.06-1.34-.14-2h3.38c.16.64.26 1.31.26 2s-.1 1.36-.26 2h-3.38z"/>
+                </svg>
+                <div class="resource-label">Internet</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Output Page (Initially Hidden) -->
+    <div class="output-page" id="outputPage">
+        <div class="output-header">
+            <h2>Project Output</h2>
+            <button class="download-btn" onclick="downloadOutput()">Download</button>
+        </div>
+        <div class="output-content" id="outputContent">
+            <!-- Project output will be displayed here -->
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        let currentProject = 'default';
+        let projects = {};
+        let agentHealthData = {};
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeAgentHealth();
+            fetchAgentHealth();
+            setInterval(fetchAgentHealth, 5000); // Update every 5 seconds
+        });
+
+        // Socket listeners
+        socket.on('connect', function() {
+            console.log('Connected to A2A system');
+        });
+
+        socket.on('activity_update', function(data) {
+            addActivityItem(data);
+        });
+
+        socket.on('project_complete', function(data) {
+            showProjectOutput(data);
+        });
+
+        // Agent Health System
+        function initializeAgentHealth() {
+            const agents = ['Claude', 'Jules', 'CODEX', 'Claude Linux'];
+            const healthContainer = document.getElementById('agentsHealth');
+            
+            agents.forEach(agent => {
+                const card = createAgentHealthCard(agent);
+                healthContainer.appendChild(card);
+            });
+        }
+
+        function createAgentHealthCard(agentName) {
+            const card = document.createElement('div');
+            card.className = 'agent-health-card';
+            card.id = `agent-${agentName.toLowerCase().replace(' ', '-')}`;
+            
+            card.innerHTML = `
+                <div class="agent-health-header">
+                    <div class="agent-name">${agentName}</div>
+                    <div class="health-indicator"></div>
+                </div>
+                <div class="health-metrics">
+                    <div class="metric-row">
+                        <span>Status:</span>
+                        <span class="status-text">Checking...</span>
+                    </div>
+                    <div class="metric-row context-metric" style="display: none;">
+                        <span>Context:</span>
+                        <span class="context-value">0%</span>
+                    </div>
+                    <div class="metric-bar context-bar" style="display: none;">
+                        <div class="metric-fill" style="width: 0%"></div>
+                    </div>
+                    <div class="metric-row tasks-metric">
+                        <span>Tasks:</span>
+                        <span class="tasks-value">0</span>
+                    </div>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        async function fetchAgentHealth() {
+            try {
+                const response = await fetch('/api/agents/health');
+                const healthData = await response.json();
+                updateAgentHealthDisplay(healthData);
+            } catch (error) {
+                console.error('Failed to fetch agent health:', error);
+            }
+        }
+
+        function updateAgentHealthDisplay(healthData) {
+            Object.entries(healthData).forEach(([agentId, data]) => {
+                const card = document.getElementById(`agent-${agentId.replace('_', '-')}`);
+                if (!card) return;
+
+                // Update card status
+                card.className = `agent-health-card ${data.status}`;
+                
+                // Update health indicator
+                const indicator = card.querySelector('.health-indicator');
+                indicator.className = `health-indicator ${data.status}`;
+                
+                // Update status text
+                const statusText = card.querySelector('.status-text');
+                statusText.textContent = data.status.charAt(0).toUpperCase() + data.status.slice(1);
+                
+                // Update context for Claude agents
+                if (agentId.includes('claude')) {
+                    const contextMetric = card.querySelector('.context-metric');
+                    const contextBar = card.querySelector('.context-bar');
+                    const contextValue = card.querySelector('.context-value');
+                    const metricFill = card.querySelector('.metric-fill');
+                    
+                    contextMetric.style.display = 'flex';
+                    contextBar.style.display = 'block';
+                    contextValue.textContent = `${data.context_usage}%`;
+                    metricFill.style.width = `${data.context_usage}%`;
+                    
+                    // Update fill color based on usage
+                    if (data.context_usage < 30) {
+                        metricFill.className = 'metric-fill';
+                    } else if (data.context_usage < 70) {
+                        metricFill.className = 'metric-fill warning';
+                    } else {
+                        metricFill.className = 'metric-fill critical';
+                    }
+                }
+                
+                // Update tasks
+                const tasksValue = card.querySelector('.tasks-value');
+                tasksValue.textContent = data.metrics.tasks_processed || 0;
+            });
+        }
+
+        // Activity Feed
+        function addActivityItem(data) {
+            const feed = document.getElementById('activityFeed');
+            const item = document.createElement('div');
+            item.className = 'activity-item';
+            
+            const timestamp = new Date().toLocaleTimeString();
+            item.innerHTML = `
+                <div class="activity-timestamp">${timestamp}</div>
+                <div class="activity-content">
+                    <span class="activity-agent">${data.agent}:</span>
+                    <span class="activity-description">${data.description}</span>
+                </div>
+            `;
+            
+            feed.insertBefore(item, feed.firstChild);
+            
+            // Keep only last 50 items
+            while (feed.children.length > 50) {
+                feed.removeChild(feed.lastChild);
+            }
+        }
+
+        // Task Submission
+        async function submitTask() {
+            const input = document.getElementById('taskInput');
+            const task = input.value.trim();
+            
+            if (!task) return;
+            
+            // Update project name from task
+            const projectName = task.split(' ').slice(0, 5).join(' ') + '...';
+            document.getElementById('projectName').textContent = projectName;
+            
+            try {
+                const response = await fetch('/api/tasks/submit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        task: task,
+                        project: currentProject
+                    })
+                });
+                
+                if (response.ok) {
+                    input.value = '';
+                    addActivityItem({
+                        agent: 'System',
+                        description: 'Task submitted successfully'
+                    });
+                }
+            } catch (error) {
+                console.error('Failed to submit task:', error);
+            }
+        }
+
+        // Project Output
+        function showProjectOutput(data) {
+            const outputPage = document.getElementById('outputPage');
+            const outputContent = document.getElementById('outputContent');
+            
+            outputContent.textContent = data.output;
+            outputPage.style.display = 'block';
+            
+            // Scroll to output
+            outputPage.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function downloadOutput() {
+            const content = document.getElementById('outputContent').textContent;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `a2a-output-${currentProject}-${Date.now()}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Resource clicks
+        document.getElementById('githubResource').addEventListener('click', function() {
+            this.classList.toggle('active');
+        });
+
+        document.getElementById('computerResource').addEventListener('click', function() {
+            this.classList.toggle('active');
+        });
+
+        document.getElementById('internetResource').addEventListener('click', function() {
+            this.classList.toggle('active');
+        });
+
+        // Enter key submission
+        document.getElementById('taskInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && e.ctrlKey) {
+                submitTask();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -14,6 +14,10 @@ import requests
 from datetime import datetime
 import subprocess
 import threading
+import sys
+sys.path.append(str(Path(__file__).parent.parent))
+from api.agent_health import create_health_endpoints, AgentHealthMonitor
+from api.project_manager import create_project_endpoints
 
 app = Flask(__name__, template_folder='.')
 CORS(app)
@@ -65,17 +69,22 @@ def stream_terminal_output():
 
 @app.route('/')
 def dashboard():
-    """Serve the interactive dashboard"""
-    dashboard_file = DASHBOARD_DIR / "interactive_dashboard.html"
+    """Serve the enhanced dashboard"""
+    dashboard_file = DASHBOARD_DIR / "enhanced_dashboard.html"
     if dashboard_file.exists():
         return render_template_string(dashboard_file.read_text())
     else:
-        return jsonify({
-            "service": "A2A Dashboard",
-            "status": "running",
-            "message": "Dashboard HTML file not found",
-            "endpoints": ["/api/health", "/api/agents/status", "/api/tasks"]
-        })
+        # Fallback to original dashboard
+        dashboard_file = DASHBOARD_DIR / "interactive_dashboard.html"
+        if dashboard_file.exists():
+            return render_template_string(dashboard_file.read_text())
+        else:
+            return jsonify({
+                "service": "A2A Dashboard",
+                "status": "running",
+                "message": "Dashboard HTML file not found",
+                "endpoints": ["/api/health", "/api/agents/status", "/api/tasks"]
+            })
 
 @app.route('/<filename>')
 def serve_static(filename):
@@ -147,14 +156,36 @@ def submit_task():
     """Submit a new task to the A2A system"""
     try:
         data = request.get_json()
+        task_text = data.get("task", "")
+        
+        # Create a new project for this task
+        project_name = ' '.join(task_text.split()[:5]) + '...'
+        project_id = project_manager.create_project(
+            name=project_name,
+            description=task_text,
+            assigned_agents=["claude", "jules", "codex"]
+        )
+        
+        # Submit task to Jules API
         task_data = {
-            "task": data.get("task", ""),
-            "assigned_to": data.get("assigned_to", "")
+            "task": task_text,
+            "assigned_to": data.get("assigned_to", ""),
+            "project_id": project_id
         }
         
         response = requests.post(f"{JULES_API_BASE}/add_task", json=task_data, timeout=5)
         if response.status_code == 201:
-            return jsonify(response.json())
+            # Log activity
+            project_manager.add_activity(
+                project_id,
+                agent="System",
+                action="Task submitted",
+                details=task_text
+            )
+            
+            result = response.json()
+            result["project_id"] = project_id
+            return jsonify(result)
         else:
             return jsonify({"error": "Failed to submit task"}), 500
     except Exception as e:
@@ -221,6 +252,12 @@ def handle_connect():
         app.terminal_thread = socketio.start_background_task(target=stream_terminal_output)
 
 if __name__ == "__main__":
+    # Initialize health monitoring
+    health_monitor = create_health_endpoints(app)
+    
+    # Initialize project management
+    project_manager = create_project_endpoints(app, socketio)
+    
     print("🚀 A2A Interactive Dashboard Server")
     print(f"📱 Dashboard: http://localhost:{DASHBOARD_PORT}")
     print(f"🔗 Jules API: {JULES_API_BASE}")
