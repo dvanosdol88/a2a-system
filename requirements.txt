@@ -47,3 +47,6 @@ eventlet>=0.33.3  # WebSocket support for production
 
 # Additional monitoring capabilities (all built-in):
 # time, threading, statistics, pathlib, json, subprocess
+
+# Redis Support for Task Storage
+redis==5.0.1  # Redis client for Python
