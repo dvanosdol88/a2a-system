@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7
+    container_name: a2a-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - broker-net
+
+  ai-connector:
+    build:
+      context: ../..
+      dockerfile: agents/ai_connector.Dockerfile
+    container_name: a2a-ai-connector
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+    networks:
+      - broker-net
+
+networks:
+  broker-net:
+    driver: bridge
+
+volumes:
+  redis_data:

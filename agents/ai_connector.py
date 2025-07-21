@@ -1,0 +1,90 @@
+import os
+import logging
+import time
+from typing import Any, Dict
+
+import redis
+
+REDIS_HOST = os.environ.get("REDIS_HOST", "localhost")
+REDIS_PORT = int(os.environ.get("REDIS_PORT", 6379))
+STREAM_NAME = "a2a_stream"
+RESULT_STREAM = "a2a_stream_results"
+GROUP_NAME = "ai_group"
+CONSUMER_NAME = "ai_connector"
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [AI-Connector] %(message)s",
+)
+
+
+def get_client() -> redis.Redis:
+    return redis.Redis(host=REDIS_HOST, port=REDIS_PORT, decode_responses=True)
+
+
+def ensure_group(client: redis.Redis) -> None:
+    try:
+        client.xgroup_create(STREAM_NAME, GROUP_NAME, id="0", mkstream=True)
+        logging.info("Consumer group created")
+    except redis.exceptions.ResponseError as exc:
+        if "BUSYGROUP" in str(exc):
+            logging.info("Consumer group already exists")
+        else:
+            raise
+
+
+def process_task(
+    entry: Dict[str, Any],
+    client: redis.Redis,
+    message_id: str,
+) -> None:
+    task = entry.get("task")
+    logging.info(f"Processing task: {task}")
+    result = {"status": "completed", "result": task}
+    client.xack(STREAM_NAME, GROUP_NAME, message_id)
+    client.xadd(RESULT_STREAM, result)
+
+
+def main() -> None:
+    client = None
+    while client is None:
+        try:
+            client = get_client()
+            ensure_group(client)
+            logging.info(f"Connected to Redis {REDIS_HOST}:{REDIS_PORT}")
+        except redis.ConnectionError:
+            logging.info("Redis connection failed, retrying...")
+            time.sleep(1)
+
+    while True:
+        try:
+            resp = client.xreadgroup(
+                GROUP_NAME,
+                CONSUMER_NAME,
+                {STREAM_NAME: ">"},
+                count=1,
+                block=5000,
+            )
+        except redis.ConnectionError:
+            logging.info("Lost Redis connection, retrying...")
+            time.sleep(1)
+            client = None
+            while client is None:
+                try:
+                    client = get_client()
+                    ensure_group(client)
+                except redis.ConnectionError:
+                    logging.info("Redis reconnect failed, retrying...")
+                    time.sleep(1)
+            continue
+
+        if not resp:
+            continue
+
+        for _stream, messages in resp:
+            for message_id, entry in messages:
+                process_task(entry, client, message_id)
+
+
+if __name__ == "__main__":
+    main()
