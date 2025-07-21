@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  redis:
+    volumes:
+      - redis_prod_data:/data
+    environment:
+      - REDIS_LOG_LEVEL=warning
+    restart: always
+
+  ai-connector:
+    environment:
+      - LOG_LEVEL=info
+      - PRODUCTION=true
+    restart: always
+
+volumes:
+  redis_prod_data:
+    name: a2a_redis_prod_data

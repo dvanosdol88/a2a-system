@@ -15,3 +15,9 @@ Starting the broker with Docker Compose will also launch the Redis-backed AI Con
 ```bash
 docker compose -f docker-compose-broker.yml down
 ```
+
+## Production Deployment
+
+```bash
+docker compose -f docker-compose-broker.yml -f docker-compose.prod.yml up -d
+```
