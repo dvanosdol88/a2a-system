@@ -50,3 +50,6 @@ eventlet>=0.33.3  # WebSocket support for production
 
 # Redis Support for Task Storage
 redis==5.0.1  # Redis client for Python
+
+# Monitoring and Metrics
+prometheus-client==0.22.1  # Prometheus metrics

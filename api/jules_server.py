@@ -1,10 +1,20 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
 from pathlib import Path
 import datetime, json
 import os
 import redis
 from redis.exceptions import ConnectionError as RedisConnectionError
+try:
+    from .metrics import (
+        tasks_total, tasks_processed_total, tasks_acknowledged_total,
+        active_tasks, redis_connection_status, track_request_time, get_metrics
+    )
+except ImportError:
+    from metrics import (
+        tasks_total, tasks_processed_total, tasks_acknowledged_total,
+        active_tasks, redis_connection_status, track_request_time, get_metrics
+    )
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all domains
@@ -50,18 +60,22 @@ def _get_task_id():
 
 @app.route("/")
 def index():
-    return {"service": "A2A Jules API", "status": "running", "endpoints": ["/health", "/tasks", "/add_task"]}
+    return {"service": "A2A Jules API", "status": "running", "endpoints": ["/health", "/tasks", "/add_task", "/metrics"]}
 
 @app.route("/health")
+@track_request_time("/health")
 def health():
     redis_status = "connected"
     if redis_client:
         try:
             redis_client.ping()
+            redis_connection_status.set(1)
         except:
             redis_status = "disconnected"
+            redis_connection_status.set(0)
     else:
         redis_status = "not configured"
+        redis_connection_status.set(0)
     
     return {
         "status": "ok",
@@ -96,6 +110,10 @@ def add_task():
                 redis_client.lpush(f"a2a:agent_tasks:{assigned_to}", json.dumps(task_entry))
             
             total_tasks = redis_client.llen("a2a:tasks")
+            # Track metrics
+            tasks_total.labels(assigned_to=assigned_to or "unassigned").inc()
+            if assigned_to:
+                active_tasks.labels(agent=assigned_to).inc()
             return {"message": f"queued {task!r}", "id": task_id, "total_tasks": total_tasks, "assigned_to": assigned_to}, 201
         except:
             # Fall through to file storage
@@ -121,6 +139,10 @@ def add_task():
         })
         AGENT_TASKS_FILE.write_text(json.dumps(agent_tasks, indent=2))
     
+    # Track metrics
+    tasks_total.labels(assigned_to=assigned_to or "unassigned").inc()
+    if assigned_to:
+        active_tasks.labels(agent=assigned_to).inc()
     return {"message": f"queued {task!r}", "id": task_id, "total_tasks": len(tasks), "assigned_to": assigned_to}, 201
 
 @app.route("/tasks")
@@ -193,6 +215,9 @@ def complete_agent_task(agent_id, task_id):
                     }
                     redis_client.lpush("a2a:tasks", json.dumps(new_task))
                     
+                    # Track metrics
+                    tasks_processed_total.labels(agent=agent_id).inc()
+                    active_tasks.labels(agent=agent_id).dec()
                     return {"message": "Task completed", "response": response}, 200
             
             return {"error": "Task not found"}, 404
@@ -236,6 +261,8 @@ def acknowledge_agent_task(agent_id, task_id):
                 "acknowledged": _now()
             }
             redis_client.hset(f"a2a:task_acks", f"{agent_id}:{task_id}", json.dumps(ack))
+            # Track metrics
+            tasks_acknowledged_total.labels(agent=agent_id).inc()
             return {"message": "Task acknowledged"}, 200
         except:
             # Fall through to file storage
@@ -255,7 +282,14 @@ def acknowledge_agent_task(agent_id, task_id):
         return {"error": "Task not found"}, 404
     
     AGENT_TASKS_FILE.write_text(json.dumps(agent_tasks, indent=2))
+    # Track metrics
+    tasks_acknowledged_total.labels(agent=agent_id).inc()
     return {"message": "Task acknowledged"}, 200
+
+@app.route("/metrics")
+def metrics():
+    """Prometheus metrics endpoint"""
+    return Response(get_metrics(), mimetype="text/plain")
 
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', os.environ.get('A2A_JULES_PORT', '5000')))
