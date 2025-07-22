@@ -28,7 +28,7 @@ class TestJulesAPI:
         try:
             # Start server in background
             cls.server_process = subprocess.Popen(
-                ["python", "jules_api.py"],
+                ["python", "-m", "api.jules_server"],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 cwd=Path(__file__).parent.parent
@@ -62,21 +62,41 @@ class TestJulesAPI:
         assert "server_time" in data
         assert data["server_time"].endswith("Z")
     
-    def test_add_task_endpoint(self):
-        """Test /add_task endpoint creates tasks properly"""
-        task_data = {"task": TEST_TASK}
-        response = requests.post(
-            f"{API_BASE_URL}/add_task",
-            json=task_data,
-            headers={"Content-Type": "application/json"}
-        )
-        
+    def test_post_tasks(self):
+        """Test POST /tasks endpoint."""
+        response = requests.post(f"{API_BASE_URL}/tasks", json={"task": "test_task"})
         assert response.status_code == 201
-        data = response.json()
-        assert "message" in data
-        assert TEST_TASK in data["message"]
-        assert "total_tasks" in data
-        assert data["total_tasks"] >= 1
+        assert "task_id" in response.json()
+
+    def test_put_task(self):
+        """Test PUT /tasks/<id> endpoint."""
+        response = requests.post(f"{API_BASE_URL}/tasks", json={"task": "test_task"})
+        task_id = response.json()["task_id"]
+
+        response = requests.put(f"{API_BASE_URL}/tasks/{task_id}", json={"status": "assigned"})
+        assert response.status_code == 200
+
+        # Verify the update
+        response = requests.get(f"{API_BASE_URL}/tasks/{task_id}")
+        assert response.status_code == 200
+        assert response.json()["data"]["status"] == "assigned"
+
+    def test_post_task_complete(self):
+        """Test POST /tasks/<id>/complete endpoint."""
+        response = requests.post(f"{API_BASE_URL}/tasks", json={"task": "test_task"})
+        task_id = response.json()["task_id"]
+
+        response = requests.post(f"{API_BASE_URL}/tasks/{task_id}/complete", json={"result": "some_result"})
+        assert response.status_code == 200
+
+    def test_get_unassigned_tasks(self):
+        """Test GET /tasks/unassigned endpoint."""
+        # Create a task without an assignment
+        requests.post(f"{API_BASE_URL}/tasks", json={"task": "unassigned_task"})
+
+        response = requests.get(f"{API_BASE_URL}/tasks/unassigned")
+        assert response.status_code == 200
+        assert isinstance(response.json(), list)
     
     def test_add_task_validation(self):
         """Test /add_task endpoint validates required fields"""

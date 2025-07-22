@@ -4,6 +4,7 @@ from pathlib import Path
 import datetime, json
 import os
 import redis
+import uuid
 from redis.exceptions import ConnectionError as RedisConnectionError
 try:
     from .metrics import (
@@ -84,66 +85,71 @@ def health():
         "storage": "redis" if redis_client else "file"
     }
 
-@app.route("/add_task", methods=["POST"])
+@app.route("/tasks", methods=["POST"])
 def add_task():
     data = request.get_json(force=True)
-    task = data.get("task", "").strip()
-    assigned_to = data.get("assigned_to", "").strip()
-    if not task:
-        return {"error": "task field required"}, 400
+    if not data or 'task' not in data:
+        return jsonify({"error": "Invalid payload"}), 400
 
-    task_id = _get_task_id()
-    task_entry = {
-        "id": task_id,
-        "task": task,
-        "created": _now(),
-        "assigned_to": assigned_to
-    }
+    task_id = str(uuid.uuid4())
+
+    # For simplicity, we'll just store the update in a new hash
+    redis_client.hset(f"task:{task_id}", mapping=data)
+
+    # Add task data to a stream
+    redis_client.xadd('a2a_stream', {"task_id": task_id})
+
+    return jsonify({"task_id": task_id}), 201
+
+
+@app.route("/tasks/<string:id>", methods=["PUT"])
+def update_task(id):
+    data = request.get_json(force=True)
+    if not data:
+        return jsonify({"error": "Invalid payload"}), 400
+
+    # For simplicity, we'll just store the update in a new hash
+    redis_client.hset(f"task:{id}", mapping=data)
     
-    if redis_client:
-        try:
-            # Store in Redis
-            redis_client.lpush("a2a:tasks", json.dumps(task_entry))
-            
-            # Store in agent-specific list if assigned
-            if assigned_to:
-                redis_client.lpush(f"a2a:agent_tasks:{assigned_to}", json.dumps(task_entry))
-            
-            total_tasks = redis_client.llen("a2a:tasks")
-            # Track metrics
-            tasks_total.labels(assigned_to=assigned_to or "unassigned").inc()
-            if assigned_to:
-                active_tasks.labels(agent=assigned_to).inc()
-            return {"message": f"queued {task!r}", "id": task_id, "total_tasks": total_tasks, "assigned_to": assigned_to}, 201
-        except:
-            # Fall through to file storage
-            pass
+    return jsonify({"message": "Task updated"}), 200
+
+
+@app.route("/tasks/<string:id>/complete", methods=["POST"])
+def complete_task(id):
+    data = request.get_json(force=True)
+    if not data or 'result' not in data:
+        return jsonify({"error": "Invalid payload"}), 400
+
+    redis_client.hset(f"task:{id}", mapping={"status": "completed", "result": json.dumps(data['result'])})
     
-    # File-based storage (fallback)
-    tasks = json.loads(TASKS_FILE.read_text()) if TASKS_FILE.exists() else []
-    if assigned_to:
-        task_entry["assigned_to"] = assigned_to
-    tasks.append(task_entry)
-    TASKS_FILE.write_text(json.dumps(tasks, indent=2))
+    return jsonify({"message": "Task marked as complete"}), 200
+
+
+@app.route("/tasks/unassigned", methods=["GET"])
+def get_unassigned_tasks():
+    # This is a conceptual example. A real implementation would need a more robust way to track assignments.
+    # For now, we'll return all tasks that don't have an "assigned_to" field.
+    tasks = []
+    for key in redis_client.scan_iter("task:*"):
+        task_data = redis_client.hgetall(key)
+        if b'assigned_to' not in task_data:
+            tasks.append({
+                "task_id": key.decode('utf-8').split(':')[1],
+                "data": {k.decode('utf-8'): v.decode('utf-8') for k, v in task_data.items()}
+            })
+    return jsonify(tasks)
+
+
+@app.route("/tasks/<string:id>", methods=["GET"])
+def get_task(id):
+    task_data = redis_client.hgetall(f"task:{id}")
+    if not task_data:
+        return jsonify({"error": "Task not found"}), 404
     
-    # Add to agent-specific tasks if assigned
-    if assigned_to:
-        agent_tasks = json.loads(AGENT_TASKS_FILE.read_text()) if AGENT_TASKS_FILE.exists() else {}
-        if assigned_to not in agent_tasks:
-            agent_tasks[assigned_to] = []
-        agent_tasks[assigned_to].append({
-            "id": task_id,
-            "task": task,
-            "created": _now(),
-            "status": "pending"
-        })
-        AGENT_TASKS_FILE.write_text(json.dumps(agent_tasks, indent=2))
-    
-    # Track metrics
-    tasks_total.labels(assigned_to=assigned_to or "unassigned").inc()
-    if assigned_to:
-        active_tasks.labels(agent=assigned_to).inc()
-    return {"message": f"queued {task!r}", "id": task_id, "total_tasks": len(tasks), "assigned_to": assigned_to}, 201
+    return jsonify({
+        "task_id": id,
+        "data": {k.decode('utf-8'): v.decode('utf-8') for k, v in task_data.items()}
+    })
 
 @app.route("/tasks")
 def list_tasks():
