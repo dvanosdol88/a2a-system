@@ -1,48 +1,16 @@
-# Render.com Deployment Configuration - With Interactive Dashboard
-# Deploy with: render blueprint launch
-
 services:
-  # Jules API Server - Core A2A Service (REQUIRED)
   - type: web
-    name: a2a-jules
-    env: python
-    region: oregon
-    plan: starter  # Paid tier for continuous operation
+    name: a2a-system-dashboard
+    runtime: python
+    rootDir: dashboard
     buildCommand: pip install -r requirements.txt
-    startCommand: python scripts/ensure_data_files.py && gunicorn api.jules_server:app
+    startCommand: gunicorn a2a_monitor_cloud:app --bind 0.0.0.0:$PORT
     envVars:
-      - key: A2A_JULES_HOST
-        value: 0.0.0.0
-      - key: A2A_DB_TYPE
-        value: sqlite  # Using SQLite instead of PostgreSQL
-      - key: A2A_DATABASE_URL
-        value: /app/data/a2a_system.db  # SQLite file path
-      - key: A2A_SECRET_KEY
-        generateValue: true
-      - key: A2A_ENABLE_AUTH
-        value: false  # Simplified for now
-      - key: GITHUB_TOKEN
+      - key: DEMO_MODE
+        value: true
+      - key: REDIS_URL
         sync: false
-      - key: GITHUB_OWNER
-        value: dvanosdol88
-    healthCheckPath: /health
-    # Add persistent disk for SQLite database
-    disk:
-      name: a2a-data
-      mountPath: /app/data
-      sizeGB: 1  # 1GB persistent storage
-
-  # Interactive Dashboard - Visual Interface
-  - type: web
-    name: a2a-dashboard
-    env: python
-    region: oregon
-    plan: starter  # Paid tier for continuous operation
-    buildCommand: pip install -r requirements.txt
-    startCommand: python scripts/ensure_data_files.py && gunicorn --worker-class eventlet -w 1 dashboard.server:app
-    envVars:
-      - key: A2A_DASHBOARD_HOST
-        value: 0.0.0.0
-      - key: JULES_API_BASE
-        value: https://a2a-jules.onrender.com  # Point to production Jules API
-    healthCheckPath: /
+      - key: JULES_API_URL
+        sync: false
+      - key: AI_CONNECTOR_URL
+        sync: false

@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: a2a-system-dashboard
+    runtime: python
+    buildCommand: pip install -r dashboard/requirements.txt
+    startCommand: cd dashboard && gunicorn a2a_monitor:app --bind 0.0.0.0:$PORT
+    envVars:
+      - key: REDIS_URL
+        sync: false
+      - key: JULES_API_URL
+        value: http://localhost:5000
+      - key: AI_CONNECTOR_URL
+        value: http://localhost:8080
+    domains:
+      - a2a-system.dvo88.com
